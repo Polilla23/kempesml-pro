@@ -1,0 +1,21 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
+
+import type { Locale } from "@/i18n/routing";
+
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const t = await getTranslations("home");
+
+  return (
+    <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+      <h1 className="text-4xl font-bold tracking-tight">{t("title")}</h1>
+      <p className="text-muted-foreground text-lg">{t("subtitle")}</p>
+    </main>
+  );
+}

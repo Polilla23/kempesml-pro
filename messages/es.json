@@ -1,0 +1,32 @@
+{
+  "common": {
+    "appName": "Kempes ML",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "search": "Buscar",
+    "actions": "Acciones",
+    "noResults": "Sin resultados"
+  },
+  "nav": {
+    "dashboard": "Inicio",
+    "teams": "Equipos",
+    "competitions": "Competiciones",
+    "transfers": "Transferencias",
+    "rankings": "Rankings",
+    "finances": "Finanzas",
+    "trophies": "Trofeos"
+  },
+  "auth": {
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña"
+  },
+  "home": {
+    "title": "Bienvenido a Kempes ML",
+    "subtitle": "Tu liga de manager de fútbol."
+  }
+}
