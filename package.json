@@ -14,6 +14,7 @@
     "db:push": "supabase db push",
     "db:diff": "supabase db diff",
     "db:types": "supabase gen types typescript --linked > src/types/database.types.ts",
+    "db:types:rest": "node scripts/gen-types-from-rest.mjs",
     "ui:add": "shadcn add"
   },
   "dependencies": {
