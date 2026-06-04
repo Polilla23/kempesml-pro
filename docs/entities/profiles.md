@@ -226,14 +226,10 @@ RLS is **enabled** on this table. Three policies are defined.
 
 Each user can only read their own profile. Admins can read all profiles.
 
+> ⚠️ Uses `is_admin()` (`SECURITY DEFINER`) instead of a subquery on `profiles` — a direct `EXISTS (SELECT FROM profiles ...)` here causes **infinite recursion** in RLS.
+
 ```sql
-USING (
-  auth.uid() = id
-  OR EXISTS (
-    SELECT 1 FROM profiles p
-    WHERE p.id = auth.uid() AND p.role = 'admin'
-  )
-);
+USING (auth.uid() = id OR is_admin());
 ```
 
 ---
@@ -245,14 +241,11 @@ USING (
 | Operation | `UPDATE` |
 | Applies to | All authenticated users |
 
-Users can edit their own profile fields but **cannot change their own role** — `role` is immutable from the user's side and can only be changed by `service_role`.
+Users can edit their own profile fields. Role immutability is enforced by the `prevent_role_change` trigger — not by `WITH CHECK` subquery (which would also cause recursion).
 
 ```sql
 USING (auth.uid() = id)
-WITH CHECK (
-  auth.uid() = id
-  AND role = (SELECT role FROM profiles WHERE id = auth.uid())
-);
+WITH CHECK (auth.uid() = id);
 ```
 
 ---
@@ -269,6 +262,36 @@ All write operations — including role changes, profile creation and deletion �
 ```sql
 USING (auth.role() = 'service_role');
 ```
+
+---
+
+### `trg_prevent_role_change`
+
+Prevents users from changing their own `role`. Fires on every `UPDATE` — if `role` changed and the caller is not `service_role`, raises an exception.
+
+```sql
+CREATE OR REPLACE FUNCTION prevent_role_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.role IS DISTINCT FROM OLD.role AND auth.role() != 'service_role' THEN
+    RAISE EXCEPTION 'Role changes are not allowed. Contact an administrator.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_prevent_role_change
+  BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION prevent_role_change();
+```
+
+| Property | Value |
+|---|---|
+| Event | `BEFORE UPDATE` |
+| Scope | `FOR EACH ROW` |
+| Function | `prevent_role_change()` |
+
+> This replaces the `WITH CHECK (role = subquery)` pattern which causes RLS recursion.
 
 ---
 
