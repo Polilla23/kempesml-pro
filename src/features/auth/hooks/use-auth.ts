@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useSupabaseBrowser } from "@/hooks/use-supabase";
 import { useRouter } from "@/i18n/navigation";
-import { createClient } from "@/lib/supabase/client";
 
 import type { SignInInput, SignUpValues } from "../schemas";
 
@@ -15,7 +14,7 @@ import type { SignInInput, SignUpValues } from "../schemas";
  * the caller can tell "logged in" from "needs email confirmation".
  */
 export function useSignUp() {
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useSupabaseBrowser();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -42,7 +41,7 @@ export function useSignUp() {
 
 /** Sign in with email + password, then route into the app. */
 export function useSignIn() {
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useSupabaseBrowser();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -61,7 +60,7 @@ export function useSignIn() {
 
 /** Sign out and route back to the sign-in screen. */
 export function useSignOut() {
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useSupabaseBrowser();
   const router = useRouter();
   const queryClient = useQueryClient();
 

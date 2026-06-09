@@ -1,10 +1,6 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-import type { Database } from "@/types/database.types";
+import type { TypedSupabaseClient } from "@/lib/supabase/types";
 
 import type { Profile, ProfileUpdate } from "../types";
-
-type Client = SupabaseClient<Database>;
 
 /**
  * Pure data-access layer for `profiles`. Every function receives the Supabase
@@ -13,7 +9,7 @@ type Client = SupabaseClient<Database>;
  * accordingly. No React, no caching here: that lives in the hooks.
  */
 export const profilesService = {
-  async getCurrent(supabase: Client): Promise<Profile | null> {
+  async getCurrent(supabase: TypedSupabaseClient): Promise<Profile | null> {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -29,7 +25,7 @@ export const profilesService = {
     return data;
   },
 
-  async getById(supabase: Client, id: string): Promise<Profile> {
+  async getById(supabase: TypedSupabaseClient, id: string): Promise<Profile> {
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
@@ -41,7 +37,7 @@ export const profilesService = {
   },
 
   async update(
-    supabase: Client,
+    supabase: TypedSupabaseClient,
     id: string,
     patch: ProfileUpdate
   ): Promise<Profile> {

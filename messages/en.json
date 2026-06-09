@@ -74,5 +74,19 @@
     "label": "Language",
     "es": "Spanish",
     "en": "English"
+  },
+  "teams": {
+    "searchPlaceholder": "Search team or manager...",
+    "name": "Name",
+    "status": "Status",
+    "manager": "Manager",
+    "email": "Email",
+    "empty": "No teams yet",
+    "error": "Could not load teams",
+    "count": "{count, plural, =0 {No teams} one {# team} other {# teams}}"
+  },
+  "comingSoon": {
+    "title": "Coming soon",
+    "description": "This section is under construction."
   }
 }

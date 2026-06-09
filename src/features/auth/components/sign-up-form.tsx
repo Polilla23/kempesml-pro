@@ -7,16 +7,9 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { TextField } from "@/components/common/text-field";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 
 import { useSignUp } from "../hooks/use-auth";
 import { type SignUpInput } from "../schemas";
@@ -55,7 +48,6 @@ export function SignUpForm() {
       { name: values.name, email: values.email, password: values.password },
       {
         onSuccess: (data) => {
-          // No session → email confirmation required.
           if (!data.session) {
             toast.success(t("checkEmailTitle"), {
               description: t("checkEmail"),
@@ -76,81 +68,37 @@ export function SignUpForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
+        <TextField
           control={form.control}
           name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("name")}</FormLabel>
-              <FormControl>
-                <Input
-                  autoComplete="name"
-                  placeholder={t("namePlaceholder")}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t("name")}
+          autoComplete="name"
+          placeholder={t("namePlaceholder")}
         />
-
-        <FormField
+        <TextField
           control={form.control}
           name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("email")}</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  placeholder={t("emailPlaceholder")}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t("email")}
+          type="email"
+          autoComplete="email"
+          placeholder={t("emailPlaceholder")}
         />
-
-        <FormField
+        <TextField
           control={form.control}
           name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("password")}</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder={t("passwordPlaceholder")}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t("password")}
+          type="password"
+          autoComplete="new-password"
+          placeholder={t("passwordPlaceholder")}
         />
-
-        <FormField
+        <TextField
           control={form.control}
           name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("confirmPassword")}</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder={t("passwordPlaceholder")}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t("confirmPassword")}
+          type="password"
+          autoComplete="new-password"
+          placeholder={t("passwordPlaceholder")}
         />
-
         <Button type="submit" className="w-full" disabled={signUp.isPending}>
           {signUp.isPending ? t("signingUp") : t("signUpButton")}
         </Button>

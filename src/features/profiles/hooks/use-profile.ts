@@ -1,21 +1,20 @@
 "use client";
 
-import { useMemo } from "react";
 import {
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
+import { useSupabaseBrowser } from "@/hooks/use-supabase";
 import { queryKeys } from "@/lib/query-keys";
-import { createClient } from "@/lib/supabase/client";
 
 import { profilesService } from "../services/profiles.service";
 import type { ProfileUpdate } from "../types";
 
 /** Current authenticated user's profile. */
 export function useCurrentProfile() {
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useSupabaseBrowser();
 
   return useQuery({
     queryKey: queryKeys.profiles.me,
@@ -25,7 +24,7 @@ export function useCurrentProfile() {
 
 /** A specific profile by id. */
 export function useProfile(id: string) {
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useSupabaseBrowser();
 
   return useQuery({
     queryKey: queryKeys.profiles.detail(id),
@@ -36,7 +35,7 @@ export function useProfile(id: string) {
 
 /** Update a profile and refresh the relevant caches. */
 export function useUpdateProfile(id: string) {
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useSupabaseBrowser();
   const queryClient = useQueryClient();
 
   return useMutation({
