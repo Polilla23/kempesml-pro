@@ -19,14 +19,60 @@
     "finances": "Finances",
     "trophies": "Trophies"
   },
-  "auth": {
-    "signIn": "Sign in",
-    "signOut": "Sign out",
-    "email": "Email",
-    "password": "Password"
-  },
   "home": {
     "title": "Welcome to Kempes ML",
-    "subtitle": "Your football manager league."
+    "subtitle": "Your football manager league.",
+    "enterApp": "Enter the app"
+  },
+  "auth": {
+    "signInTitle": "Sign in",
+    "signInSubtitle": "Sign in with your account to continue",
+    "signUpTitle": "Create account",
+    "signUpSubtitle": "Sign up to join the league",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "emailPlaceholder": "you@email.com",
+    "passwordPlaceholder": "••••••••",
+    "signInButton": "Sign in",
+    "signingIn": "Signing in...",
+    "signUpButton": "Create account",
+    "signingUp": "Creating account...",
+    "signOut": "Sign out",
+    "signInErrorTitle": "Could not sign in",
+    "invalidCredentials": "Invalid email or password",
+    "signUpErrorTitle": "Could not create account",
+    "emailInUse": "An account with that email already exists",
+    "checkEmailTitle": "Check your email",
+    "checkEmail": "We sent you a link to confirm your account",
+    "noAccount": "Don't have an account?",
+    "signUpLink": "Sign up",
+    "haveAccount": "Already have an account?",
+    "signInLink": "Sign in",
+    "errors": {
+      "required": "This field is required",
+      "invalidEmail": "Invalid email address",
+      "passwordMin": "Password must be at least 6 characters",
+      "nameMin": "Name must be at least 2 characters",
+      "passwordsDontMatch": "Passwords do not match"
+    }
+  },
+  "userMenu": {
+    "account": "My account",
+    "profile": "Profile",
+    "signOut": "Sign out"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "label": "Language",
+    "es": "Spanish",
+    "en": "English"
   }
 }

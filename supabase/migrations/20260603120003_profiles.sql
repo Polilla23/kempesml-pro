@@ -27,10 +27,18 @@ create trigger trg_profiles_updated_at
   for each row execute function set_updated_at();
 
 -- Auto-create a profile row when a new auth user signs up.
+-- NOTE: `set search_path = ''` is required on SECURITY DEFINER functions —
+-- without it the function runs with the auth admin's search_path (which lacks
+-- `public`) and the insert fails with "Database error saving new user". All
+-- objects must therefore be schema-qualified (public.profiles).
 create or replace function handle_new_user()
-returns trigger as $$
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
 begin
-  insert into profiles (id, mail, name, role)
+  insert into public.profiles (id, mail, name, role)
   values (
     new.id,
     new.email,
@@ -40,7 +48,7 @@ begin
   on conflict (id) do nothing;
   return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 create trigger trg_new_user
   after insert on auth.users

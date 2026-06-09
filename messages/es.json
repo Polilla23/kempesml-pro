@@ -19,14 +19,60 @@
     "finances": "Finanzas",
     "trophies": "Trofeos"
   },
-  "auth": {
-    "signIn": "Iniciar sesión",
-    "signOut": "Cerrar sesión",
-    "email": "Correo electrónico",
-    "password": "Contraseña"
-  },
   "home": {
     "title": "Bienvenido a Kempes ML",
-    "subtitle": "Tu liga de manager de fútbol."
+    "subtitle": "Tu liga de manager de fútbol.",
+    "enterApp": "Entrar a la app"
+  },
+  "auth": {
+    "signInTitle": "Iniciar sesión",
+    "signInSubtitle": "Ingresá con tu cuenta para continuar",
+    "signUpTitle": "Crear cuenta",
+    "signUpSubtitle": "Registrate para sumarte a la liga",
+    "name": "Nombre",
+    "namePlaceholder": "Tu nombre",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Repetir contraseña",
+    "emailPlaceholder": "tu@correo.com",
+    "passwordPlaceholder": "••••••••",
+    "signInButton": "Iniciar sesión",
+    "signingIn": "Ingresando...",
+    "signUpButton": "Crear cuenta",
+    "signingUp": "Creando cuenta...",
+    "signOut": "Cerrar sesión",
+    "signInErrorTitle": "No se pudo iniciar sesión",
+    "invalidCredentials": "Correo o contraseña incorrectos",
+    "signUpErrorTitle": "No se pudo crear la cuenta",
+    "emailInUse": "Ya existe una cuenta con ese correo",
+    "checkEmailTitle": "Revisá tu correo",
+    "checkEmail": "Te enviamos un enlace para confirmar tu cuenta",
+    "noAccount": "¿No tenés cuenta?",
+    "signUpLink": "Registrate",
+    "haveAccount": "¿Ya tenés cuenta?",
+    "signInLink": "Iniciá sesión",
+    "errors": {
+      "required": "Este campo es obligatorio",
+      "invalidEmail": "Correo electrónico inválido",
+      "passwordMin": "La contraseña debe tener al menos 6 caracteres",
+      "nameMin": "El nombre debe tener al menos 2 caracteres",
+      "passwordsDontMatch": "Las contraseñas no coinciden"
+    }
+  },
+  "userMenu": {
+    "account": "Mi cuenta",
+    "profile": "Perfil",
+    "signOut": "Cerrar sesión"
+  },
+  "theme": {
+    "toggle": "Cambiar tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "language": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "Inglés"
   }
 }
