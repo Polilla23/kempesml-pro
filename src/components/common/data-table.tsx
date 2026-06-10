@@ -3,6 +3,8 @@
 import { useState } from "react";
 import {
   type ColumnDef,
+  type OnChangeFn,
+  type PaginationState,
   type SortingState,
   flexRender,
   getCoreRowModel,
@@ -42,6 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 import { EmptyState } from "./empty-state";
 
@@ -51,49 +54,92 @@ type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   isLoading?: boolean;
+  /** Subtle dim while refetching a new page (server mode). */
+  isFetching?: boolean;
   /** If set, shows a global search input with this placeholder. */
   searchPlaceholder?: string;
   emptyMessage?: string;
   emptyIcon?: LucideIcon;
   pageSize?: number;
+
+  /**
+   * Server mode. When `manualPagination` is true, the parent owns pagination,
+   * sorting and search state (data is already the current page from the DB).
+   * Leave these out for client mode (sort/paginate/filter the full dataset).
+   */
+  manualPagination?: boolean;
+  rowCount?: number;
+  pagination?: PaginationState;
+  onPaginationChange?: OnChangeFn<PaginationState>;
+  sorting?: SortingState;
+  onSortingChange?: OnChangeFn<SortingState>;
+  globalFilter?: string;
+  onGlobalFilterChange?: (value: string) => void;
 };
 
-/**
- * Generic, sortable, paginated, searchable table built on TanStack Table.
- * Reusable across every listing (teams, players, transfers, users, ...).
- * Pass `columns` (ColumnDef[]) + `data`; everything else is optional.
- */
 export function DataTable<TData, TValue>({
   columns,
   data,
   isLoading,
+  isFetching,
   searchPlaceholder,
   emptyMessage,
   emptyIcon,
   pageSize = 10,
+  manualPagination,
+  rowCount,
+  pagination: paginationProp,
+  onPaginationChange,
+  sorting: sortingProp,
+  onSortingChange,
+  globalFilter: globalFilterProp,
+  onGlobalFilterChange,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations("table");
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const isServer = !!manualPagination;
+
+  const [cSorting, setCSorting] = useState<SortingState>([]);
+  const [cFilter, setCFilter] = useState("");
+  const [cPagination, setCPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize,
+  });
+
+  const sorting = isServer ? (sortingProp ?? []) : cSorting;
+  const globalFilter = isServer ? (globalFilterProp ?? "") : cFilter;
+  const pagination = isServer
+    ? (paginationProp ?? { pageIndex: 0, pageSize })
+    : cPagination;
+
+  const setGlobalFilter = isServer
+    ? (onGlobalFilterChange ?? (() => {}))
+    : setCFilter;
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table's useReactTable is safe here; the rule false-positives on its return value.
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, globalFilter },
-    onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
+    state: { sorting, globalFilter, pagination },
+    onSortingChange: isServer ? onSortingChange : setCSorting,
+    onPaginationChange: isServer ? onPaginationChange : setCPagination,
+    onGlobalFilterChange: isServer ? undefined : setCFilter,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize } },
+    getSortedRowModel: isServer ? undefined : getSortedRowModel(),
+    getFilteredRowModel: isServer ? undefined : getFilteredRowModel(),
+    getPaginationRowModel: isServer ? undefined : getPaginationRowModel(),
+    manualPagination: isServer,
+    manualSorting: isServer,
+    manualFiltering: isServer,
+    rowCount: isServer ? rowCount : undefined,
   });
 
   const colCount = columns.length;
   const rows = table.getRowModel().rows;
-  const totalRows = table.getFilteredRowModel().rows.length;
+  const totalRows = isServer
+    ? (rowCount ?? 0)
+    : table.getFilteredRowModel().rows.length;
   const { pageSize: currentPageSize, pageIndex } = table.getState().pagination;
+  const pageCount = table.getPageCount();
 
   return (
     <div className="space-y-4">
@@ -110,7 +156,12 @@ export function DataTable<TData, TValue>({
       )}
 
       <div className="rounded-lg border">
-        <Table>
+        <Table
+          className={cn(
+            "transition-opacity",
+            isFetching && !isLoading && "opacity-60"
+          )}
+        >
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -216,10 +267,7 @@ export function DataTable<TData, TValue>({
             </div>
 
             <span className="text-muted-foreground text-sm">
-              {t("pageOf", {
-                page: pageIndex + 1,
-                pages: table.getPageCount(),
-              })}
+              {t("pageOf", { page: pageIndex + 1, pages: Math.max(pageCount, 1) })}
             </span>
 
             <div className="flex items-center gap-1">
@@ -253,7 +301,7 @@ export function DataTable<TData, TValue>({
               <Button
                 variant="outline"
                 size="icon-sm"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                onClick={() => table.setPageIndex(pageCount - 1)}
                 disabled={!table.getCanNextPage()}
                 aria-label={t("lastPage")}
               >

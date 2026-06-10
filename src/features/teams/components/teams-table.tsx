@@ -1,15 +1,22 @@
 "use client";
 
-import { useMemo } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import type {
+  ColumnDef,
+  OnChangeFn,
+  PaginationState,
+  SortingState,
+} from "@tanstack/react-table";
 import { Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { DataTable } from "@/components/common/data-table";
 import { EmptyState } from "@/components/common/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import type { PaginatedParams } from "@/lib/query/pagination";
 
-import { useTeams } from "../hooks/use-teams";
+import { useTeamsPaged } from "../hooks/use-teams";
 import type { Team } from "../types";
 
 function statusVariant(estado: string) {
@@ -18,7 +25,40 @@ function statusVariant(estado: string) {
 
 export function TeamsTable() {
   const t = useTranslations("teams");
-  const { data, isLoading, isError } = useTeams();
+
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "nombre", desc: false },
+  ]);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 300);
+
+  // Changing the filter or sort jumps back to the first page.
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
+  };
+
+  const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
+    setSorting(updater);
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
+  };
+
+  const params = useMemo<PaginatedParams>(
+    () => ({
+      page: pagination.pageIndex,
+      pageSize: pagination.pageSize,
+      search: debouncedSearch || undefined,
+      sortId: sorting[0]?.id,
+      sortDesc: sorting[0]?.desc,
+    }),
+    [pagination, sorting, debouncedSearch]
+  );
+
+  const { data, isLoading, isFetching, isError } = useTeamsPaged(params);
 
   const columns = useMemo<ColumnDef<Team>[]>(
     () => [
@@ -32,6 +72,7 @@ export function TeamsTable() {
       {
         accessorKey: "estado",
         header: t("status"),
+        enableSorting: false,
         cell: ({ row }) => (
           <Badge variant={statusVariant(row.original.estado)}>
             {row.original.estado}
@@ -46,6 +87,7 @@ export function TeamsTable() {
       {
         accessorKey: "manager_email",
         header: t("email"),
+        enableSorting: false,
         cell: ({ row }) => (
           <span className="text-muted-foreground">
             {row.original.manager_email ?? "—"}
@@ -63,8 +105,17 @@ export function TeamsTable() {
   return (
     <DataTable
       columns={columns}
-      data={data ?? []}
+      data={data?.rows ?? []}
+      rowCount={data?.total ?? 0}
       isLoading={isLoading}
+      isFetching={isFetching}
+      manualPagination
+      pagination={pagination}
+      onPaginationChange={setPagination}
+      sorting={sorting}
+      onSortingChange={handleSortingChange}
+      globalFilter={search}
+      onGlobalFilterChange={handleSearchChange}
       searchPlaceholder={t("searchPlaceholder")}
       emptyMessage={t("empty")}
       emptyIcon={Users}

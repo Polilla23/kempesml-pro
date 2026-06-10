@@ -1,19 +1,31 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { useSupabaseBrowser } from "@/hooks/use-supabase";
+import type { PaginatedParams } from "@/lib/query/pagination";
 import { queryKeys } from "@/lib/query-keys";
 
 import { teamsService } from "../services/teams.service";
 
-/** All teams, ordered by name. Filtering/search is done client-side. */
+/** All teams (client-side filtering; small datasets). */
 export function useTeams() {
   const supabase = useSupabaseBrowser();
 
   return useQuery({
     queryKey: queryKeys.teams.list(),
     queryFn: () => teamsService.list(supabase),
+  });
+}
+
+/** Server-side paginated teams; keeps the previous page visible while fetching. */
+export function useTeamsPaged(params: PaginatedParams) {
+  const supabase = useSupabaseBrowser();
+
+  return useQuery({
+    queryKey: queryKeys.teams.list(params),
+    queryFn: () => teamsService.listPaged(supabase, params),
+    placeholderData: keepPreviousData,
   });
 }
 
