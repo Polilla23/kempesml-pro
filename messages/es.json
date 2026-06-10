@@ -12,13 +12,24 @@
     "menu": "Menú"
   },
   "nav": {
+    "sections": {
+      "main": "Principal",
+      "admin": "Administración"
+    },
     "dashboard": "Inicio",
+    "standings": "Posiciones",
+    "fixtures": "Fixtures",
     "teams": "Equipos",
-    "competitions": "Competiciones",
+    "players": "Jugadores",
     "transfers": "Transferencias",
-    "rankings": "Rankings",
+    "statistics": "Estadísticas",
     "finances": "Finanzas",
-    "trophies": "Trofeos"
+    "trophies": "Palmarés",
+    "news": "Noticias",
+    "adminUsers": "Usuarios",
+    "adminClubs": "Clubes",
+    "adminCompetitions": "Competiciones",
+    "adminSeasons": "Temporadas"
   },
   "home": {
     "title": "Bienvenido a Kempes ML",

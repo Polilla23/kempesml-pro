@@ -16,7 +16,7 @@ import {
 import { NavLinks } from "./nav-links";
 
 /** Hamburger + slide-in nav drawer. Only rendered on small screens. */
-export function MobileNav() {
+export function MobileNav({ role }: { role: string }) {
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
 
@@ -40,7 +40,7 @@ export function MobileNav() {
             {t("appName")}
           </SheetTitle>
         </SheetHeader>
-        <NavLinks onNavigate={() => setOpen(false)} />
+        <NavLinks role={role} onNavigate={() => setOpen(false)} />
       </SheetContent>
     </Sheet>
   );

@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { NavLinks } from "./nav-links";
 
-export function AppSidebar() {
+export function AppSidebar({ role }: { role: string }) {
   const t = useTranslations("common");
 
   return (
@@ -12,7 +12,7 @@ export function AppSidebar() {
       <div className="flex h-14 items-center gap-2 border-b px-6">
         <span className="text-lg font-bold tracking-tight">{t("appName")}</span>
       </div>
-      <NavLinks />
+      <NavLinks role={role} />
     </aside>
   );
 }

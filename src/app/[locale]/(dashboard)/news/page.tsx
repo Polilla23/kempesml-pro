@@ -3,7 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { ComingSoon } from "@/components/common/coming-soon";
 import type { Locale } from "@/i18n/routing";
 
-export default async function CompetitionsPage({
+export default async function NewsPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -11,5 +11,5 @@ export default async function CompetitionsPage({
   const { locale } = await params;
   setRequestLocale(locale as Locale);
 
-  return <ComingSoon titleKey="competitions" />;
+  return <ComingSoon titleKey="news" />;
 }

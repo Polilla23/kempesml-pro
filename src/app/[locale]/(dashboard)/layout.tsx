@@ -30,12 +30,13 @@ export default async function DashboardLayout({
   const profile = await profilesService.getCurrent(supabase);
   const name = profile?.name ?? user.email ?? "?";
   const email = profile?.mail ?? user.email ?? "";
+  const role = profile?.role ?? "manager";
 
   return (
     <div className="flex min-h-screen">
-      <AppSidebar />
+      <AppSidebar role={role} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <AppHeader name={name} email={email} />
+        <AppHeader name={name} email={email} role={role} />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
     </div>
