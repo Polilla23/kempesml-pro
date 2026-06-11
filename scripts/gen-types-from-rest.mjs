@@ -100,6 +100,35 @@ function emitTable(name, d) {
 const tableNames = Object.keys(defs).filter((n) => !isView(n)).sort();
 const viewNames = Object.keys(defs).filter(isView).sort();
 
+function rpcArgType(p) {
+  const t = p.type;
+  const fmt = p.format || "";
+  if (t === "integer" || t === "number") return "number";
+  if (t === "boolean") return "boolean";
+  if (/json/.test(fmt) || t === "object" || t === "array") return "Json";
+  if (/^numeric/.test(fmt)) return "number";
+  return "string";
+}
+
+const rpcNames = Object.keys(spec.paths ?? {})
+  .filter((p) => p.startsWith("/rpc/"))
+  .map((p) => p.slice("/rpc/".length))
+  .sort();
+
+const functionsBlock = rpcNames.length
+  ? rpcNames
+      .map((fn) => {
+        const post = spec.paths["/rpc/" + fn]?.post ?? {};
+        const body = (post.parameters || []).find((x) => x.in === "body");
+        const args = Object.entries(body?.schema?.properties ?? {});
+        const argsType = args.length
+          ? `{ ${args.map(([k, v]) => `${k}: ${rpcArgType(v)}`).join("; ")} }`
+          : "Record<PropertyKey, never>";
+        return `      ${fn}: { Args: ${argsType}; Returns: unknown };`;
+      })
+      .join("\n")
+  : "      [_ in never]: never;";
+
 const out = `/**
  * Database schema types — AUTO-DERIVED from the live Supabase REST (PostgREST
  * OpenAPI) endpoint. Accurate for Row reads, FK relationships and nullability.
@@ -128,8 +157,7 @@ ${tableNames.length ? tableNames.map((n) => emitTable(n, defs[n])).join("\n") : 
 ${viewNames.length ? viewNames.map((n) => emitTable(n, defs[n])).join("\n") : "      [_ in never]: never;"}
     };
     Functions: {
-      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
-      manages_team: { Args: { p_team_id: string }; Returns: boolean };
+${functionsBlock}
     };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;

@@ -105,8 +105,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
-      manages_team: { Args: { p_team_id: string }; Returns: boolean };
+      add_team: { Args: { p_team: Json }; Returns: unknown };
+      get_all_teams: { Args: Record<PropertyKey, never>; Returns: unknown };
+      get_team_by_id: { Args: { p_id: string }; Returns: unknown };
+      get_teams_by_status: { Args: { p_status: string }; Returns: unknown };
+      is_admin: { Args: Record<PropertyKey, never>; Returns: unknown };
+      manages_team: { Args: { p_team_id: string }; Returns: unknown };
+      rls_auto_enable: { Args: Record<PropertyKey, never>; Returns: unknown };
     };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
