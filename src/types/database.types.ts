@@ -1,241 +1,125 @@
+/**
+ * Database schema types — AUTO-DERIVED from the live Supabase REST (PostgREST
+ * OpenAPI) endpoint. Accurate for Row reads, FK relationships and nullability.
+ *
+ * ⚠️ Insert/Update column optionality is heuristic (DB column defaults are not
+ * fully exposed over REST). When the DB owner can share an official dump from
+ * `supabase gen types typescript`, replace this file with it.
+ *
+ * Regenerate: pnpm db:types:rest
+ */
+
 export type Json =
   | string
   | number
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   public: {
     Tables: {
       profiles: {
         Row: {
-          created_at: string
-          id: string
-          mail: string
-          name: string
-          role: string
-          status: string
-          team_id: string | null
-          team_name: string | null
-          updated_at: string
-        }
+          id: string;
+          name: string;
+          mail: string;
+          role: string;
+          team_id: string | null;
+          team_name: string | null;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          id: string
-          mail: string
-          name: string
-          role?: string
-          status?: string
-          team_id?: string | null
-          team_name?: string | null
-          updated_at?: string
-        }
+          id?: string;
+          name: string;
+          mail: string;
+          role: string;
+          team_id?: string | null;
+          team_name?: string | null;
+          status: string;
+          created_at?: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          mail?: string
-          name?: string
-          role?: string
-          status?: string
-          team_id?: string | null
-          team_name?: string | null
-          updated_at?: string
-        }
+          id?: string;
+          name?: string;
+          mail?: string;
+          role?: string;
+          team_id?: string | null;
+          team_name?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
         Relationships: [
-          {
-            foreignKeyName: "profiles_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+        {
+          foreignKeyName: "profiles_team_id_fkey";
+          columns: ["team_id"];
+          isOneToOne: false;
+          referencedRelation: "teams";
+          referencedColumns: ["id"];
+        },
+      ];
+      };
       teams: {
         Row: {
-          created_at: string
-          estado: string
-          id: string
-          ingreso: string | null
-          manager_email: string | null
-          manager_id: string | null
-          manager_nombre: string | null
-          manager_whatsapp: string | null
-          nombre: string
-          ultima_revision_pos: string | null
-          updated_at: string
-        }
+          id: string;
+          team_name: string;
+          team_status: string;
+          manager_id: string | null;
+          manager_name: string | null;
+          manager_mail: string | null;
+          manager_whatsapp: string | null;
+          created_at: string;
+          updated_at: string | null;
+        };
         Insert: {
-          created_at?: string
-          estado?: string
-          id: string
-          ingreso?: string | null
-          manager_email?: string | null
-          manager_id?: string | null
-          manager_nombre?: string | null
-          manager_whatsapp?: string | null
-          nombre: string
-          ultima_revision_pos?: string | null
-          updated_at?: string
-        }
+          id: string;
+          team_name: string;
+          team_status: string;
+          manager_id?: string | null;
+          manager_name?: string | null;
+          manager_mail?: string | null;
+          manager_whatsapp?: string | null;
+          created_at?: string;
+          updated_at?: string | null;
+        };
         Update: {
-          created_at?: string
-          estado?: string
-          id?: string
-          ingreso?: string | null
-          manager_email?: string | null
-          manager_id?: string | null
-          manager_nombre?: string | null
-          manager_whatsapp?: string | null
-          nombre?: string
-          ultima_revision_pos?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-    }
+          id?: string;
+          team_name?: string;
+          team_status?: string;
+          manager_id?: string | null;
+          manager_name?: string | null;
+          manager_mail?: string | null;
+          manager_whatsapp?: string | null;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
-      is_admin: { Args: never; Returns: boolean }
-      manages_team: { Args: { p_team_id: string }; Returns: boolean }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      manages_team: { Args: { p_team_id: string }; Returns: boolean };
+    };
+    Enums: Record<never, never>;
+    CompositeTypes: Record<never, never>;
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type PublicSchema = Database["public"];
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const
+export type Tables<T extends keyof PublicSchema["Tables"]> =
+  PublicSchema["Tables"][T]["Row"];
+export type TablesInsert<T extends keyof PublicSchema["Tables"]> =
+  PublicSchema["Tables"][T]["Insert"];
+export type TablesUpdate<T extends keyof PublicSchema["Tables"]> =
+  PublicSchema["Tables"][T]["Update"];
+export type Views<T extends keyof PublicSchema["Views"]> =
+  PublicSchema["Views"][T]["Row"];

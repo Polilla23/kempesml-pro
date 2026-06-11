@@ -63,34 +63,34 @@ export function TeamsTable() {
   const columns = useMemo<ColumnDef<Team>[]>(
     () => [
       {
-        accessorKey: "nombre",
+        accessorKey: "team_name",
         header: t("name"),
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.nombre}</span>
+          <span className="font-medium">{row.original.team_name}</span>
         ),
       },
       {
-        accessorKey: "estado",
+        accessorKey: "team_status",
         header: t("status"),
         enableSorting: false,
         cell: ({ row }) => (
-          <Badge variant={statusVariant(row.original.estado)}>
-            {row.original.estado}
+          <Badge variant={statusVariant(row.original.team_status)}>
+            {row.original.team_status || "—"}
           </Badge>
         ),
       },
       {
-        accessorKey: "manager_nombre",
+        accessorKey: "manager_name",
         header: t("manager"),
-        cell: ({ row }) => row.original.manager_nombre ?? "—",
+        cell: ({ row }) => row.original.manager_name ?? "—",
       },
       {
-        accessorKey: "manager_email",
+        accessorKey: "manager_mail",
         header: t("email"),
         enableSorting: false,
         cell: ({ row }) => (
           <span className="text-muted-foreground">
-            {row.original.manager_email ?? "—"}
+            {row.original.manager_mail ?? "—"}
           </span>
         ),
       },

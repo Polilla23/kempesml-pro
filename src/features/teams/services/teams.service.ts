@@ -8,7 +8,7 @@ import type { TypedSupabaseClient } from "@/lib/supabase/types";
 import type { Team } from "../types";
 
 /** Columns that free-text search covers. */
-const SEARCHABLE = ["nombre", "manager_nombre", "manager_email"] as const;
+const SEARCHABLE = ["team_name", "manager_name", "manager_mail"] as const;
 
 /**
  * Pure data-access layer for `teams`. Receives the Supabase client so it works
@@ -20,7 +20,7 @@ export const teamsService = {
     const { data, error } = await supabase
       .from("teams")
       .select("*")
-      .order("nombre", { ascending: true });
+      .order("team_name", { ascending: true });
 
     if (error) throw error;
     return data ?? [];
@@ -46,7 +46,7 @@ export const teamsService = {
     }
 
     query = query
-      .order(params.sortId ?? "nombre", { ascending: !params.sortDesc })
+      .order(params.sortId ?? "team_name", { ascending: !params.sortDesc })
       .range(from, to);
 
     const { data, error, count } = await query;

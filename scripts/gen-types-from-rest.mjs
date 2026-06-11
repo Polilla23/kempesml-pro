@@ -122,10 +122,10 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-${tableNames.map((n) => emitTable(n, defs[n])).join("\n")}
+${tableNames.length ? tableNames.map((n) => emitTable(n, defs[n])).join("\n") : "      [_ in never]: never;"}
     };
     Views: {
-${viewNames.map((n) => emitTable(n, defs[n])).join("\n")}
+${viewNames.length ? viewNames.map((n) => emitTable(n, defs[n])).join("\n") : "      [_ in never]: never;"}
     };
     Functions: {
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
