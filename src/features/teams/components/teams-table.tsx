@@ -31,7 +31,7 @@ export function TeamsTable() {
     pageSize: 10,
   });
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "nombre", desc: false },
+    { id: "team_name", desc: false },
   ]);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 300);
