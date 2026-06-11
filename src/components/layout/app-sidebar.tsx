@@ -3,8 +3,17 @@
 import { useTranslations } from "next-intl";
 
 import { NavLinks } from "./nav-links";
+import { SidebarFooter } from "./sidebar-footer";
 
-export function AppSidebar({ role }: { role: string }) {
+export function AppSidebar({
+  role,
+  name,
+  email,
+}: {
+  role: string;
+  name: string;
+  email: string;
+}) {
   const t = useTranslations("common");
 
   return (
@@ -13,6 +22,7 @@ export function AppSidebar({ role }: { role: string }) {
         <span className="text-lg font-bold tracking-tight">{t("appName")}</span>
       </div>
       <NavLinks role={role} />
+      <SidebarFooter name={name} email={email} />
     </aside>
   );
 }

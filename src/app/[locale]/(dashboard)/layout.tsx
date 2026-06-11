@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { MobileHeader } from "@/components/layout/mobile-header";
 import { profilesService } from "@/features/profiles";
 import type { Locale } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
@@ -34,9 +34,9 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen">
-      <AppSidebar role={role} />
+      <AppSidebar role={role} name={name} email={email} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <AppHeader name={name} email={email} role={role} />
+        <MobileHeader role={role} name={name} email={email} />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
     </div>

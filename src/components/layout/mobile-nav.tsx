@@ -14,9 +14,18 @@ import {
 } from "@/components/ui/sheet";
 
 import { NavLinks } from "./nav-links";
+import { SidebarFooter } from "./sidebar-footer";
 
 /** Hamburger + slide-in nav drawer. Only rendered on small screens. */
-export function MobileNav({ role }: { role: string }) {
+export function MobileNav({
+  role,
+  name,
+  email,
+}: {
+  role: string;
+  name: string;
+  email: string;
+}) {
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
 
@@ -34,13 +43,14 @@ export function MobileNav({ role }: { role: string }) {
       >
         <Menu className="size-5" />
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0">
+      <SheetContent side="left" className="flex w-64 flex-col p-0">
         <SheetHeader className="h-14 justify-center border-b px-6">
           <SheetTitle className="text-lg font-bold tracking-tight">
             {t("appName")}
           </SheetTitle>
         </SheetHeader>
         <NavLinks role={role} onNavigate={() => setOpen(false)} />
+        <SidebarFooter name={name} email={email} />
       </SheetContent>
     </Sheet>
   );
