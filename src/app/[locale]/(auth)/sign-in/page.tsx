@@ -1,13 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { SignInForm } from "@/features/auth";
+import { AuthBranding, AuthShell, SignInForm } from "@/features/auth";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -20,25 +13,44 @@ export default async function SignInPage({
   setRequestLocale(locale as Locale);
 
   const t = await getTranslations("auth");
+  const highlight = (chunks: React.ReactNode) => (
+    <span className="text-kml-primary italic">{chunks}</span>
+  );
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl">{t("signInTitle")}</CardTitle>
-        <CardDescription>{t("signInSubtitle")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <SignInForm />
-        <p className="text-muted-foreground text-center text-sm">
-          {t("noAccount")}{" "}
-          <Link
-            href="/sign-up"
-            className="text-foreground font-medium underline-offset-4 hover:underline"
-          >
-            {t("signUpLink")}
-          </Link>
+    <AuthShell
+      branding={
+        <AuthBranding
+          eyebrow={t("signInEyebrow")}
+          title={t.rich("signInBrandTitle", { hl: highlight })}
+          description={t("signInBrandDescription")}
+          stats={[
+            { value: "2.4k+", label: t("statsPlayersLive") },
+            { value: "12", label: t("statsActiveLeagues") },
+          ]}
+        />
+      }
+    >
+      <div className="space-y-2">
+        <h1 className="text-kml-on-surface font-display text-3xl font-bold tracking-tight uppercase md:hidden">
+          {t.rich("signInBrandTitle", { hl: highlight })}
+        </h1>
+        <p className="text-kml-on-surface-variant font-body text-lg">
+          {t("signInSubtitle")}
         </p>
-      </CardContent>
-    </Card>
+      </div>
+
+      <SignInForm />
+
+      <p className="text-kml-on-surface-variant font-body text-center">
+        {t("noAccount")}{" "}
+        <Link
+          href="/sign-up"
+          className="text-kml-primary font-bold tracking-tighter uppercase transition-all hover:underline"
+        >
+          {t("signUpLink")}
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

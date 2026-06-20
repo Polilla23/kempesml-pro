@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocale } from "next-intl";
 
 import { useSupabaseBrowser } from "@/hooks/use-supabase";
 import { useRouter } from "@/i18n/navigation";
@@ -72,6 +73,47 @@ export function useSignOut() {
     onSuccess: () => {
       queryClient.clear();
       router.replace("/sign-in");
+      router.refresh();
+    },
+  });
+}
+
+/**
+ * Send a password-reset email. Supabase redirects the link back to
+ * /reset-password (locale-prefixed) where the user sets a new password.
+ */
+export function useRequestPasswordReset() {
+  const supabase = useSupabaseBrowser();
+  const locale = useLocale();
+
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const redirectTo = `${window.location.origin}/${locale}/reset-password`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      });
+      if (error) throw error;
+    },
+  });
+}
+
+/**
+ * Set a new password for the recovery session created when the user follows
+ * the reset link, then route into the app.
+ */
+export function useUpdatePassword() {
+  const supabase = useSupabaseBrowser();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (password: string) => {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      router.replace("/dashboard");
       router.refresh();
     },
   });

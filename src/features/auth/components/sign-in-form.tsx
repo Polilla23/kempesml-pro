@@ -2,17 +2,19 @@
 
 import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Lock, Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { TextField } from "@/components/common/text-field";
-import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { Link } from "@/i18n/navigation";
 
 import { useSignIn } from "../hooks/use-auth";
 import { type SignInInput } from "../schemas";
+import { AuthField } from "./auth-field";
+import { AuthSubmit } from "./auth-submit";
 
 export function SignInForm() {
   const t = useTranslations("auth");
@@ -47,26 +49,38 @@ export function SignInForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <TextField
-          control={form.control}
-          name="email"
-          label={t("email")}
-          type="email"
-          autoComplete="email"
-          placeholder={t("emailPlaceholder")}
-        />
-        <TextField
-          control={form.control}
-          name="password"
-          label={t("password")}
-          type="password"
-          autoComplete="current-password"
-          placeholder={t("passwordPlaceholder")}
-        />
-        <Button type="submit" className="w-full" disabled={signIn.isPending}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-4">
+          <AuthField
+            control={form.control}
+            name="email"
+            label={t("email")}
+            type="email"
+            autoComplete="email"
+            placeholder={t("emailPlaceholder")}
+            icon={Mail}
+          />
+          <AuthField
+            control={form.control}
+            name="password"
+            label={t("password")}
+            type="password"
+            autoComplete="current-password"
+            placeholder={t("passwordPlaceholder")}
+            icon={Lock}
+            action={
+              <Link
+                href="/forgot-password"
+                className="text-kml-primary font-label text-xs uppercase transition-all hover:underline"
+              >
+                {t("forgotPasswordLink")}
+              </Link>
+            }
+          />
+        </div>
+        <AuthSubmit pending={signIn.isPending}>
           {signIn.isPending ? t("signingIn") : t("signInButton")}
-        </Button>
+        </AuthSubmit>
       </form>
     </Form>
   );

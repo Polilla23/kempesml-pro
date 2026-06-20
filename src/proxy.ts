@@ -7,10 +7,21 @@ import { updateSession } from "@/lib/supabase/middleware";
 const intlMiddleware = createIntlMiddleware(routing);
 
 /** Paths (locale-stripped) reachable without an authenticated session. */
-const PUBLIC_PATHS = ["/", "/sign-in", "/sign-up"];
+const PUBLIC_PATHS = [
+  "/",
+  "/sign-in",
+  "/sign-up",
+  "/forgot-password",
+  "/reset-password",
+];
 
-/** Auth screens an already-authenticated user should be bounced away from. */
-const AUTH_PATHS = ["/sign-in", "/sign-up"];
+/**
+ * Auth screens an already-authenticated user should be bounced away from.
+ * Note: /reset-password is intentionally excluded — following the recovery
+ * link creates a session, and the user still needs to land there to set a new
+ * password.
+ */
+const AUTH_PATHS = ["/sign-in", "/sign-up", "/forgot-password"];
 
 /**
  * Combined proxy (Next.js 16's renamed middleware):
