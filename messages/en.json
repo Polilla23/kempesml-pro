@@ -46,11 +46,6 @@
     "competitionTypes": "Competition Types",
     "adminSeasons": "Seasons"
   },
-  "home": {
-    "title": "Welcome to Kempes ML",
-    "subtitle": "Your football manager league.",
-    "enterApp": "Enter the app"
-  },
   "auth": {
     "signInTitle": "Sign in",
     "signInSubtitle": "Sign in with your account to continue",

@@ -46,11 +46,6 @@
     "competitionTypes": "Tipos de Competencia",
     "adminSeasons": "Temporadas"
   },
-  "home": {
-    "title": "Bienvenido a Kempes ML",
-    "subtitle": "Tu liga de manager de fútbol.",
-    "enterApp": "Entrar a la app"
-  },
   "auth": {
     "signInTitle": "Iniciar sesión",
     "signInSubtitle": "Ingresá con tu cuenta para continuar",

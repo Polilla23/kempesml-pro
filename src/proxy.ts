@@ -8,7 +8,6 @@ const intlMiddleware = createIntlMiddleware(routing);
 
 /** Paths (locale-stripped) reachable without an authenticated session. */
 const PUBLIC_PATHS = [
-  "/",
   "/sign-in",
   "/sign-up",
   "/forgot-password",
@@ -16,12 +15,15 @@ const PUBLIC_PATHS = [
 ];
 
 /**
- * Auth screens an already-authenticated user should be bounced away from.
+ * Paths an already-authenticated user should be bounced away from (to the
+ * dashboard). The root "/" is included so it never shows a landing page —
+ * logged-in users go to /dashboard, logged-out users fall through to the
+ * unauthenticated redirect below (→ /sign-in).
  * Note: /reset-password is intentionally excluded — following the recovery
  * link creates a session, and the user still needs to land there to set a new
  * password.
  */
-const AUTH_PATHS = ["/sign-in", "/sign-up", "/forgot-password"];
+const AUTH_PATHS = ["/", "/sign-in", "/sign-up", "/forgot-password"];
 
 /**
  * Combined proxy (Next.js 16's renamed middleware):
