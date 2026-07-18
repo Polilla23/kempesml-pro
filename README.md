@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kempes ML
 
-## Getting Started
+Web app donde los managers arman su equipo y compiten en ligas y copas.
+**Next.js 16** (App Router) · TypeScript · Tailwind v4 · shadcn/ui (Base UI) ·
+TanStack Query · Supabase · next-intl · **pnpm**.
 
-First, run the development server:
+## Requisitos
+
+- **Node.js** ≥ 20
+- **pnpm** (gestor de paquetes del proyecto — **no usar `npm`/`yarn`**).
+  Si no lo tenés: `npm install -g pnpm` o `corepack enable`.
+
+## Puesta en marcha
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# 1. Clonar e instalar dependencias (con pnpm, no npm)
+git clone git@github.com:Polilla23/kempesml-pro.git
+cd kempesml-pro
+pnpm install
+
+# 2. Variables de entorno
+cp .env.example .env.local
+#   Completá .env.local con las claves reales de Supabase.
+#   ⚠️ .env.local NO está en el repo (está en .gitignore) — pedíselas a un
+#      compañero del equipo. Se sacan de Supabase → Project Settings → API.
+
+# 3. Levantar en desarrollo
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrí [http://localhost:3000](http://localhost:3000). Sin sesión te redirige a `/sign-in`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Variables de entorno (`.env.local`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Dónde se usa |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase (cliente + server) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key pública |
+| `SUPABASE_SERVICE_ROLE_KEY` | Solo server (scripts/migraciones que saltean RLS). **Nunca** exponer al browser |
 
-## Learn More
+> Sin `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` la app no arranca.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev            # desarrollo
+pnpm build          # build de producción
+pnpm typecheck      # tsc --noEmit
+pnpm lint           # eslint
+pnpm db:types:rest  # regenerar tipos de la DB desde el REST
+pnpm ui:add <comp>  # agregar un componente de shadcn
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Antes de commitear**: `pnpm typecheck && pnpm lint && pnpm build` en verde.
 
-## Deploy on Vercel
+## Convenciones
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ver [`CLAUDE.md`](./CLAUDE.md) — es la fuente de verdad de arquitectura y convenciones
+(estructura por features, i18n con next-intl, acceso a datos con Supabase, etc.).
