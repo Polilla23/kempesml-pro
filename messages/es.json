@@ -162,5 +162,223 @@
     "prevPage": "Página anterior",
     "nextPage": "Página siguiente",
     "lastPage": "Última página"
+  },
+  "teamProfile": {
+    "notFound": "No encontramos ese club",
+    "backToTeams": "Volver a equipos",
+    "tabs": {
+      "summary": "Resumen",
+      "squad": "Plantilla",
+      "history": "Historial",
+      "finances": "Finanzas"
+    },
+    "hero": {
+      "rank": "{position}° · {division}",
+      "manager": "DT",
+      "season": "Temporada {season}",
+      "formation": "Formación {formation}",
+      "squadRating": "Rating plantel",
+      "squadValue": "Valor plantel",
+      "squad": "Plantel",
+      "squadMeta": "{count} jugadores · {age} años prom.",
+      "form": "Forma actual",
+      "record": "{played} PJ · {won}G {drawn}E {lost}P · {points} pts",
+      "titles": "{count, plural, =0 {Sin títulos} one {# título} other {# títulos}}"
+    },
+    "fixtures": {
+      "title": "Próximos partidos",
+      "home": "Local",
+      "away": "Visitante",
+      "manager": "DT",
+      "contact": "Contactar rival",
+      "submitResult": "Cargar resultado",
+      "prev": "Anterior",
+      "next": "Siguiente"
+    },
+    "bestXi": {
+      "title": "Mejor XI"
+    },
+    "standings": {
+      "title": "Clasificación",
+      "pos": "#",
+      "club": "Club",
+      "played": "PJ",
+      "gd": "DG",
+      "pts": "Pts",
+      "prev": "Competición anterior",
+      "next": "Competición siguiente"
+    },
+    "results": {
+      "title": "Últimos resultados"
+    },
+    "highlights": {
+      "topScorer": "Goleador del equipo",
+      "mvp": "MVP de la temporada",
+      "transferables": "Transferibles",
+      "goals": "goles",
+      "mvpAwards": "premios MVP",
+      "matches": "{count} partidos",
+      "goalsAssists": "{goals} goles · {assists} asistencias"
+    },
+    "squad": {
+      "title": "Plantilla completa",
+      "count": "{count, plural, one {# jugador} other {# jugadores}}",
+      "filters": {
+        "all": "Todos",
+        "GK": "POR",
+        "DEF": "DEF",
+        "MID": "MED",
+        "FWD": "DEL",
+        "transferables": "Transferibles"
+      },
+      "columns": {
+        "player": "Jugador",
+        "nat": "Nac",
+        "pos": "Pos",
+        "rating": "Med",
+        "played": "PJ",
+        "goals": "G",
+        "assists": "A",
+        "salary": "Salario",
+        "value": "Valor",
+        "status": "Estado"
+      },
+      "transferable": "Transferible",
+      "untransferable": "Intransferible"
+    },
+    "history": {
+      "title": "Historial por temporada",
+      "season": "Temp",
+      "competition": "Competición",
+      "position": "Pos/Fase",
+      "played": "PJ",
+      "won": "G",
+      "drawn": "E",
+      "lost": "P",
+      "goals": "GF:GC",
+      "result": "Resultado"
+    },
+    "finances": {
+      "income": "Ingresos {season}",
+      "expenses": "Egresos {season}",
+      "balance": "Balance",
+      "budget": "Presupuesto disponible",
+      "movements": "Movimientos · Temporada {season}",
+      "accumulated": "Acumulado"
+    }
+  },
+  "playerProfile": {
+    "notFound": "No encontramos ese jugador",
+    "backToPlayers": "Volver a jugadores",
+    "hero": {
+      "birthDate": "Fecha de nacimiento",
+      "nationality": "Nacionalidad",
+      "height": "Altura",
+      "foot": "Pie hábil",
+      "feet": {
+        "left": "Izquierdo",
+        "right": "Derecho",
+        "both": "Ambidiestro"
+      },
+      "secondaryPosition": "Posición secundaria",
+      "salary": "Salario",
+      "salaryPerSeason": "{amount} / temporada",
+      "joined": "En el club desde",
+      "joinedSeason": "Temporada {season}",
+      "marketValue": "Valor de mercado",
+      "valueRank": "#{rank} en valor de la liga",
+      "vsAverage": "{pct} vs promedio de {position} ({avg})"
+    },
+    "attributes": {
+      "title": "Atributos",
+      "skillMoves": "Filigranas",
+      "weakFoot": "Pie malo",
+      "attackRate": "Ritmo de ataque",
+      "defRate": "Def.",
+      "rates": {
+        "low": "Bajo",
+        "medium": "Medio",
+        "high": "Alto"
+      },
+      "overall": "General",
+      "potential": "Potencial",
+      "short": {
+        "pace": "RIT",
+        "shooting": "TIR",
+        "passing": "PAS",
+        "dribbling": "REG",
+        "defending": "DEF",
+        "physical": "FÍS"
+      },
+      "groups": {
+        "pace": "Ritmo",
+        "shooting": "Tiro",
+        "passing": "Pase",
+        "dribbling": "Regate",
+        "defending": "Defensa",
+        "physical": "Físico"
+      },
+      "items": {
+        "acceleration": "Aceleración",
+        "sprint_speed": "Vel. de sprint",
+        "positioning": "Posicionamiento",
+        "finishing": "Definición",
+        "shot_power": "Potencia de tiro",
+        "long_shots": "Tiros lejanos",
+        "volleys": "Voleas",
+        "penalties": "Penales",
+        "vision": "Visión",
+        "crossing": "Centros",
+        "fk_accuracy": "Precisión de tiro libre",
+        "short_passing": "Pase corto",
+        "long_passing": "Pase largo",
+        "curve": "Efecto",
+        "agility": "Agilidad",
+        "balance": "Equilibrio",
+        "reactions": "Reacciones",
+        "ball_control": "Control de balón",
+        "dribbling": "Regate",
+        "composure": "Compostura",
+        "interceptions": "Intercepciones",
+        "heading_accuracy": "Precisión de cabeza",
+        "def_awareness": "Conciencia defensiva",
+        "standing_tackle": "Entrada normal",
+        "sliding_tackle": "Entrada deslizante",
+        "jumping": "Salto",
+        "stamina": "Resistencia",
+        "strength": "Fuerza",
+        "aggression": "Agresividad"
+      }
+    },
+    "seasons": {
+      "title": "Historial por temporada",
+      "season": "Temp",
+      "club": "Club",
+      "division": "División",
+      "rating": "Med",
+      "played": "PJ",
+      "goals": "G",
+      "assists": "A",
+      "goalsPerMatch": "G/P",
+      "value": "Valor",
+      "total": "Total"
+    },
+    "transfers": {
+      "title": "Historial de transferencias",
+      "total": "Total en traspasos",
+      "kinds": {
+        "purchase": "Compra",
+        "loan": "Cesión",
+        "free": "Libre"
+      }
+    },
+    "valueChart": {
+      "title": "Evolución del valor",
+      "arrival": "Llegada al club",
+      "sinceArrival": "desde su llegada"
+    },
+    "valueRank": {
+      "title": "Ranking de valor · Liga"
+    }
   }
 }

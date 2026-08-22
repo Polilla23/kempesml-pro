@@ -162,5 +162,223 @@
     "prevPage": "Previous page",
     "nextPage": "Next page",
     "lastPage": "Last page"
+  },
+  "teamProfile": {
+    "notFound": "We couldn't find that club",
+    "backToTeams": "Back to teams",
+    "tabs": {
+      "summary": "Overview",
+      "squad": "Squad",
+      "history": "History",
+      "finances": "Finances"
+    },
+    "hero": {
+      "rank": "{position}{position, selectordinal, one {st} two {nd} few {rd} other {th}} · {division}",
+      "manager": "Manager",
+      "season": "Season {season}",
+      "formation": "Formation {formation}",
+      "squadRating": "Squad rating",
+      "squadValue": "Squad value",
+      "squad": "Squad",
+      "squadMeta": "{count} players · {age} avg. age",
+      "form": "Current form",
+      "record": "{played} P · {won}W {drawn}D {lost}L · {points} pts",
+      "titles": "{count, plural, =0 {No titles} one {# title} other {# titles}}"
+    },
+    "fixtures": {
+      "title": "Upcoming matches",
+      "home": "Home",
+      "away": "Away",
+      "manager": "Manager",
+      "contact": "Contact rival",
+      "submitResult": "Submit result",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "bestXi": {
+      "title": "Best XI"
+    },
+    "standings": {
+      "title": "Standings",
+      "pos": "#",
+      "club": "Club",
+      "played": "P",
+      "gd": "GD",
+      "pts": "Pts",
+      "prev": "Previous competition",
+      "next": "Next competition"
+    },
+    "results": {
+      "title": "Latest results"
+    },
+    "highlights": {
+      "topScorer": "Top scorer",
+      "mvp": "Season MVP",
+      "transferables": "Transfer listed",
+      "goals": "goals",
+      "mvpAwards": "MVP awards",
+      "matches": "{count} matches",
+      "goalsAssists": "{goals} goals · {assists} assists"
+    },
+    "squad": {
+      "title": "Full squad",
+      "count": "{count, plural, one {# player} other {# players}}",
+      "filters": {
+        "all": "All",
+        "GK": "GK",
+        "DEF": "DEF",
+        "MID": "MID",
+        "FWD": "FWD",
+        "transferables": "Transfer listed"
+      },
+      "columns": {
+        "player": "Player",
+        "nat": "Nat",
+        "pos": "Pos",
+        "rating": "OVR",
+        "played": "P",
+        "goals": "G",
+        "assists": "A",
+        "salary": "Salary",
+        "value": "Value",
+        "status": "Status"
+      },
+      "transferable": "Listed",
+      "untransferable": "Not listed"
+    },
+    "history": {
+      "title": "Season history",
+      "season": "Season",
+      "competition": "Competition",
+      "position": "Pos/Stage",
+      "played": "P",
+      "won": "W",
+      "drawn": "D",
+      "lost": "L",
+      "goals": "GF:GA",
+      "result": "Outcome"
+    },
+    "finances": {
+      "income": "Income {season}",
+      "expenses": "Expenses {season}",
+      "balance": "Balance",
+      "budget": "Available budget",
+      "movements": "Movements · Season {season}",
+      "accumulated": "Accumulated"
+    }
+  },
+  "playerProfile": {
+    "notFound": "We couldn't find that player",
+    "backToPlayers": "Back to players",
+    "hero": {
+      "birthDate": "Date of birth",
+      "nationality": "Nationality",
+      "height": "Height",
+      "foot": "Preferred foot",
+      "feet": {
+        "left": "Left",
+        "right": "Right",
+        "both": "Both"
+      },
+      "secondaryPosition": "Secondary position",
+      "salary": "Salary",
+      "salaryPerSeason": "{amount} / season",
+      "joined": "At the club since",
+      "joinedSeason": "Season {season}",
+      "marketValue": "Market value",
+      "valueRank": "#{rank} most valuable in the league",
+      "vsAverage": "{pct} vs {position} average ({avg})"
+    },
+    "attributes": {
+      "title": "Attributes",
+      "skillMoves": "Skill moves",
+      "weakFoot": "Weak foot",
+      "attackRate": "Attacking work rate",
+      "defRate": "Def.",
+      "rates": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "overall": "Overall",
+      "potential": "Potential",
+      "short": {
+        "pace": "PAC",
+        "shooting": "SHO",
+        "passing": "PAS",
+        "dribbling": "DRI",
+        "defending": "DEF",
+        "physical": "PHY"
+      },
+      "groups": {
+        "pace": "Pace",
+        "shooting": "Shooting",
+        "passing": "Passing",
+        "dribbling": "Dribbling",
+        "defending": "Defending",
+        "physical": "Physical"
+      },
+      "items": {
+        "acceleration": "Acceleration",
+        "sprint_speed": "Sprint speed",
+        "positioning": "Positioning",
+        "finishing": "Finishing",
+        "shot_power": "Shot power",
+        "long_shots": "Long shots",
+        "volleys": "Volleys",
+        "penalties": "Penalties",
+        "vision": "Vision",
+        "crossing": "Crossing",
+        "fk_accuracy": "FK accuracy",
+        "short_passing": "Short passing",
+        "long_passing": "Long passing",
+        "curve": "Curve",
+        "agility": "Agility",
+        "balance": "Balance",
+        "reactions": "Reactions",
+        "ball_control": "Ball control",
+        "dribbling": "Dribbling",
+        "composure": "Composure",
+        "interceptions": "Interceptions",
+        "heading_accuracy": "Heading accuracy",
+        "def_awareness": "Defensive awareness",
+        "standing_tackle": "Standing tackle",
+        "sliding_tackle": "Sliding tackle",
+        "jumping": "Jumping",
+        "stamina": "Stamina",
+        "strength": "Strength",
+        "aggression": "Aggression"
+      }
+    },
+    "seasons": {
+      "title": "Season history",
+      "season": "Season",
+      "club": "Club",
+      "division": "Division",
+      "rating": "OVR",
+      "played": "P",
+      "goals": "G",
+      "assists": "A",
+      "goalsPerMatch": "G/M",
+      "value": "Value",
+      "total": "Total"
+    },
+    "transfers": {
+      "title": "Transfer history",
+      "total": "Total fees",
+      "kinds": {
+        "purchase": "Transfer",
+        "loan": "Loan",
+        "free": "Free"
+      }
+    },
+    "valueChart": {
+      "title": "Value over time",
+      "arrival": "Joined the club",
+      "sinceArrival": "since joining"
+    },
+    "valueRank": {
+      "title": "Value ranking · League"
+    }
   }
 }

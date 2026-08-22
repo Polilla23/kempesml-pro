@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { DataTable } from "@/components/common/data-table";
 import { EmptyState } from "@/components/common/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "@/i18n/navigation";
 
 import { useTeams } from "../hooks/use-teams";
 import type { Team } from "../types";
@@ -26,7 +27,12 @@ export function TeamsTable() {
         accessorKey: "team_name",
         header: t("name"),
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.team_name}</span>
+          <Link
+            href={`/teams/${row.original.id}`}
+            className="font-medium hover:underline"
+          >
+            {row.original.team_name}
+          </Link>
         ),
       },
       {
