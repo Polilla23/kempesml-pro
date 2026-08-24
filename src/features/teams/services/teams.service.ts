@@ -19,7 +19,9 @@ export const teamsService = {
     supabase: TypedSupabaseClient,
     id: string
   ): Promise<Team | null> {
-    const { data, error } = await supabase.rpc("get_team_by_id", { p_id: id });
+    const { data, error } = await supabase.rpc("get_team_by_id", {
+      p_team_id: id,
+    });
     if (error) throw error;
     const row = Array.isArray(data) ? data[0] : data;
     return (row as Team) ?? null;

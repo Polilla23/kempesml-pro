@@ -66,6 +66,16 @@ export function yearsSince(iso: string, now = new Date()) {
   return years;
 }
 
+/** ISO-3166 alpha-2 code → flag emoji ("es" → 🇪🇸). Falls back to 🏳️. */
+export function flagEmoji(iso2: string | null | undefined) {
+  if (!iso2 || iso2.length !== 2) return "🏳️";
+  const [a, b] = iso2.toUpperCase();
+  return (
+    String.fromCodePoint(0x1f1e6 + a.charCodeAt(0) - 65) +
+    String.fromCodePoint(0x1f1e6 + b.charCodeAt(0) - 65)
+  );
+}
+
 /** Initials for avatars: "River Plate" → "RP", "Ederson" → "E". */
 export function initials(name: string, max = 2) {
   return name

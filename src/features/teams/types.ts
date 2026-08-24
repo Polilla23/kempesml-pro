@@ -45,7 +45,8 @@ export type TeamProfileHeader = TeamRef & {
   season_label: string;
   formation: string;
   division_name: string;
-  division_position: number;
+  /** Formatted label: "7°" for leagues, stage ("Final") for cups, "—" if unknown. */
+  division_position: string;
   squad_rating: number;
   squad_value: number;
   squad_size: number;
@@ -68,8 +69,10 @@ export type TeamFixture = {
   id: string;
   competition: string;
   competition_kind: CompetitionKind;
-  /** ISO datetime. */
-  kickoff_at: string;
+  /** ISO datetime, or null when the match only has a matchday (see `plazo`). */
+  kickoff_at: string | null;
+  /** Matchday label ("1", "12") used when there is no scheduled datetime. */
+  plazo: string | null;
   is_home: boolean;
   rival: TeamRef;
 };
@@ -80,8 +83,8 @@ export type TeamMatchResult = {
   is_home: boolean;
   rival_name: string;
   competition: string;
-  /** ISO date. */
-  played_at: string;
+  /** ISO date, or null when matches carry no real date (only a matchday). */
+  played_at: string | null;
   goals_for: number;
   goals_against: number;
 };

@@ -38,8 +38,9 @@ export function ResultsCard({
             <div className="truncate font-bold">
               {m.is_home ? "vs" : "@"} {m.rival_name}
             </div>
-            <div className="text-[11px] text-muted-foreground">
-              {m.competition} · {formatShortDate(m.played_at, locale)}
+            <div className="truncate text-[11px] text-muted-foreground">
+              {m.competition}
+              {m.played_at ? ` · ${formatShortDate(m.played_at, locale)}` : ""}
             </div>
           </div>
           <span className="font-black tabular-nums">

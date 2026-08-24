@@ -35,6 +35,25 @@ export function ratingSvgColor(rating: number) {
 
 export type CompetitionKind = "league" | "cup" | "youth" | "gold" | "silver";
 
+/**
+ * Deterministic club color derived from the team id. Fallback while the DB
+ * has no per-club color/crest; same id always yields the same hue.
+ */
+export function clubColor(id: string) {
+  let h = 0;
+  for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return `oklch(0.55 0.16 ${h % 360})`;
+}
+
+/** DB position code ("ARQ", "DFC", "MCO", "DC"...) → filter group. */
+export function positionGroupOf(code: string | null | undefined): PositionGroup {
+  if (!code) return "MID";
+  if (code === "ARQ" || code === "POR") return "GK";
+  if (["DFC", "LD", "LI", "CAD"].includes(code)) return "DEF";
+  if (["MC", "MCD", "MCO", "MD", "MI"].includes(code)) return "MID";
+  return "FWD"; // DC, ED, EI, SD...
+}
+
 export function competitionIcon(kind: CompetitionKind) {
   return (
     { league: "🏟️", cup: "🏆", youth: "🏅", gold: "🥇", silver: "🥈" } as const

@@ -50,6 +50,9 @@ export function FixturesCarousel({
           Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-36 w-64 shrink-0 rounded-xl" />
           ))}
+        {!isLoading && fixtures?.length === 0 && (
+          <p className="py-6 text-sm text-muted-foreground">{t("empty")}</p>
+        )}
         {fixtures?.map((fx) => (
           <article
             key={fx.id}
@@ -59,7 +62,13 @@ export function FixturesCarousel({
               <span className={cn("font-bold", competitionTextClass(fx.competition_kind))}>
                 {fx.competition}
               </span>
-              <span className="capitalize">{formatFixtureDate(fx.kickoff_at, locale)}</span>
+              <span className="capitalize">
+                {fx.kickoff_at
+                  ? formatFixtureDate(fx.kickoff_at, locale)
+                  : fx.plazo
+                    ? t("plazo", { n: fx.plazo })
+                    : t("tbd")}
+              </span>
             </div>
             <div className="flex items-center gap-2.5">
               <ClubAvatar name={fx.rival.name} color={fx.rival.color} />

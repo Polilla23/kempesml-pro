@@ -1,17 +1,18 @@
-/* eslint-disable @typescript-eslint/no-unused-vars -- mock params; remove this line when migrating to RPCs */
+/* eslint-disable @typescript-eslint/no-unused-vars -- unused `_supabase`/`_teamId` params on the 3 still-mocked methods; remove when they get real RPCs */
+import {
+  clubColor,
+  positionGroupOf,
+  type CompetitionKind,
+  type MatchResult,
+} from "@/lib/football";
+import { flagEmoji } from "@/lib/format";
 import type { TypedSupabaseClient } from "@/lib/supabase/types";
+import type { Tables, Views } from "@/types/database.types";
 
 import {
-  MOCK_TEAM_BEST_XI,
   MOCK_TEAM_FINANCES,
-  MOCK_TEAM_FIXTURES,
-  MOCK_TEAM_HEADER,
-  MOCK_TEAM_HIGHLIGHTS,
   MOCK_TEAM_HISTORY,
   MOCK_TEAM_RECORDS,
-  MOCK_TEAM_RESULTS,
-  MOCK_TEAM_SQUAD,
-  MOCK_TEAM_STANDINGS,
 } from "../mocks/team-profile.mock";
 import type {
   BestXi,
@@ -26,117 +27,524 @@ import type {
   TeamSeasonEntry,
 } from "../types";
 
-/**
- * Data-access for the club profile page.
- *
- * ⚠️ CURRENTLY BACKED BY MOCKS. Every method below returns static data from
- * `../mocks/team-profile.mock.ts`. Each one documents the Postgres RPC that
- * should replace it (`TODO(db)`), following the same pattern as
- * `teams.service.ts` (`supabase.rpc("fn", { p_... })`, SECURITY DEFINER
- * functions that return `jsonb` with exactly the shape in `../types.ts`).
- *
- * Swapping a method = replace its body with:
- *
- *   const { data, error } = await supabase.rpc("<fn>", { p_team_id: teamId });
- *   if (error) throw error;
- *   return data as <Type>;
- *
- * Hooks and components do not need to change. Remember to delete the mock
- * import once all methods are migrated.
- */
+/* -------------------------------------------------------------------------- */
+/*  Raw RPC payloads (jsonb functions — not covered by generated types)       */
+/* -------------------------------------------------------------------------- */
+
+type RpcSeason = { id: string; name: string; status: string };
+
+type RpcTeamProfile = {
+  id: string;
+  name: string;
+  manager_name: string | null;
+  season_label: string | null;
+  formation: string | null;
+  avg_age: number | null;
+  squad_size: number | null;
+  squad_value: number | null;
+  squad_rating: number | null;
+  record: {
+    won: number;
+    lost: number;
+    drawn: number;
+    played: number;
+    points: number;
+  } | null;
+  team_form:
+    | { result: "win" | "draw" | "lose"; home_team_id: string; away_team_id: string }[]
+    | null;
+  tournaments:
+    | { position: string | null; tournament_id: string; tournament_name: string }[]
+    | null;
+};
+
+type RpcTrophy = {
+  kind: "LEAGUE" | "CUP";
+  competition: string;
+  division: string | null;
+  seasons: string[] | null;
+  total_trophies: number;
+};
+
+type RpcSquadPlayer = {
+  id: string;
+  name: string;
+  rating: number | null;
+  salary: number | null;
+  status: string | null;
+  positions: string[] | null;
+  primary_position: string | null;
+  nationality_code: string | null;
+  market_value: number | null;
+};
+
+type RpcTeamRow = { id: string; team_name: string; manager_id: string | null };
+
+type StandingRowRaw = Views<"v_standings_full">;
+type PlayerStatRow = Views<"v_tournament_player_stats">;
+type MatchRow = Tables<"matches">;
+type TournamentRow = Tables<"tournaments">;
+
+/* -------------------------------------------------------------------------- */
+/*  Cached RPC helper                                                         */
+/*                                                                            */
+/*  Several profile blocks share prerequisites (team profile, season, team    */
+/*  list, per-tournament stats). Each hook has its own TanStack cache, so     */
+/*  without this the same RPC would fire once per section. Short TTL: this    */
+/*  only dedupes calls within one page visit.                                 */
+/* -------------------------------------------------------------------------- */
+
+const TTL_MS = 60_000;
+const rpcCache = new Map<string, { at: number; promise: Promise<unknown> }>();
+
+function rpc<T>(
+  supabase: TypedSupabaseClient,
+  fn: string,
+  args: Record<string, unknown> = {}
+): Promise<T> {
+  const key = `${fn}:${JSON.stringify(args)}`;
+  const hit = rpcCache.get(key);
+  if (hit && Date.now() - hit.at < TTL_MS) return hit.promise as Promise<T>;
+  const promise = Promise.resolve(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- fn names are dynamic here; payload types are asserted per call site
+    supabase.rpc(fn as any, args as any)
+  ).then(({ data, error }) => {
+    if (error) {
+      rpcCache.delete(key);
+      throw error;
+    }
+    return data as T;
+  });
+  rpcCache.set(key, { at: Date.now(), promise });
+  return promise as Promise<T>;
+}
+
+/* ----------------------------- shared lookups ----------------------------- */
+
+const getActiveSeason = (sb: TypedSupabaseClient) =>
+  rpc<RpcSeason>(sb, "get_active_season");
+
+const getProfileRaw = (sb: TypedSupabaseClient, teamId: string) =>
+  rpc<RpcTeamProfile | null>(sb, "get_team_profile", { p_team_id: teamId });
+
+const getSquadRaw = (sb: TypedSupabaseClient, teamId: string) =>
+  rpc<RpcSquadPlayer[] | null>(sb, "get_squad", { p_team_id: teamId });
+
+/** All teams, as a Map id → row (rival names for fixtures/results). */
+async function getTeamsIndex(sb: TypedSupabaseClient) {
+  const rows = (await rpc<RpcTeamRow[] | null>(sb, "get_all_teams")) ?? [];
+  return new Map(rows.map((t) => [t.id, t]));
+}
+
+async function getSeasonTournaments(sb: TypedSupabaseClient) {
+  const season = await getActiveSeason(sb);
+  const rows = await rpc<TournamentRow[] | null>(sb, "get_tournaments_by_season", {
+    p_season_id: season.id,
+  });
+  return { season, tournaments: rows ?? [] };
+}
+
+/** PLAYED/PENDING matches of every tournament the team plays this season. */
+async function getTeamMatches(
+  sb: TypedSupabaseClient,
+  teamId: string,
+  status: "PENDING" | "PLAYED"
+) {
+  const profile = await getProfileRaw(sb, teamId);
+  const tournaments = profile?.tournaments ?? [];
+  const perTournament = await Promise.all(
+    tournaments.map((t) =>
+      rpc<MatchRow[] | null>(sb, "get_matches_by_tournament", {
+        p_tournament_id: t.tournament_id,
+        p_status: status,
+      })
+    )
+  );
+  const nameById = new Map(tournaments.map((t) => [t.tournament_id, t.tournament_name]));
+  return perTournament
+    .flatMap((rows) => rows ?? [])
+    .filter(
+      (m) =>
+        !m.bye_team_id &&
+        m.home_team_id &&
+        m.away_team_id &&
+        (m.home_team_id === teamId || m.away_team_id === teamId)
+    )
+    .map((m) => ({ ...m, tournament_name: nameById.get(m.tournament_id) ?? m.tournament_id }));
+}
+
+/** Season stats per player, aggregated across the team's tournaments. */
+async function getAggregatedStats(sb: TypedSupabaseClient, teamId: string) {
+  const profile = await getProfileRaw(sb, teamId);
+  const tournaments = profile?.tournaments ?? [];
+  const perTournament = await Promise.all(
+    tournaments.map((t) =>
+      rpc<PlayerStatRow[] | null>(sb, "get_player_stats_by_tournament", {
+        p_tournament_id: t.tournament_id,
+        p_team_id: teamId,
+      })
+    )
+  );
+  const agg = new Map<
+    string,
+    { played: number; goals: number; assists: number; mvps: number }
+  >();
+  for (const row of perTournament.flatMap((r) => r ?? [])) {
+    if (!row.player_id) continue;
+    const cur = agg.get(row.player_id) ?? { played: 0, goals: 0, assists: 0, mvps: 0 };
+    cur.played += row.matches_played ?? 0;
+    cur.goals += row.goals ?? 0;
+    cur.assists += row.assists ?? 0;
+    cur.mvps += row.mvps ?? 0;
+    agg.set(row.player_id, cur);
+  }
+  return agg;
+}
+
+/* -------------------------------- mappers --------------------------------- */
+
+/** "Copa de Oro" → gold, "Copa de Plata" → silver, "…Kempesitas…" cup → youth. */
+function competitionKindOf(type: string | null, name: string): CompetitionKind {
+  if (type === "LEAGUE") return "league";
+  const n = name.toLowerCase();
+  if (n.includes("oro")) return "gold";
+  if (n.includes("plata")) return "silver";
+  if (n.includes("kempesita")) return "youth";
+  return "cup";
+}
+
+const positionLabel = (position: string | null) =>
+  position && /^\d+$/.test(position) ? `${position}°` : (position ?? "—");
+
+const formToResult = (r: "win" | "draw" | "lose"): MatchResult =>
+  r === "win" ? "W" : r === "draw" ? "D" : "L";
+
+/** "Artem Dovbyk" → "Dovbyk" (pitch labels). */
+const surname = (name: string) => name.trim().split(/\s+/).at(-1) ?? name;
+
+/** Preferred position codes per slot (0 = GK, then back → front lines). */
+const XI_SLOTS: Record<string, string[][]> = {
+  "4-3-3": [
+    ["ARQ"],
+    ["LI"], ["DFC"], ["DFC"], ["LD"],
+    ["MCD", "MC"], ["MC", "MCO", "MI"], ["MC", "MCO", "MD"],
+    ["EI", "MI"], ["DC"], ["ED", "MD"],
+  ],
+  "4-4-2": [
+    ["ARQ"],
+    ["LI"], ["DFC"], ["DFC"], ["LD"],
+    ["MI", "EI"], ["MC", "MCD"], ["MC", "MCO"], ["MD", "ED"],
+    ["DC"], ["DC", "MCO"],
+  ],
+  "3-5-2": [
+    ["ARQ"],
+    ["DFC"], ["DFC"], ["DFC"],
+    ["MI", "LI"], ["MC", "MCD"], ["MCD", "MC"], ["MC", "MCO"], ["MD", "LD"],
+    ["DC"], ["DC", "MCO"],
+  ],
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Public service                                                            */
+/*                                                                            */
+/*  History, records and finances are still MOCKED — the DB has no functions  */
+/*  for them yet (see TODO(db) on each). Everything else hits real RPCs.      */
+/* -------------------------------------------------------------------------- */
+
 export const teamProfileService = {
-  /**
-   * TODO(db): `get_team_profile(p_team_id text) → jsonb` (TeamProfileHeader)
-   * Header of the club: identity, manager, current division + position,
-   * squad aggregates (rating/value/size/avg age), last-5 form, current-season
-   * record and trophies grouped by competition with the seasons they were won.
-   * Returns `null` when the team does not exist.
-   */
+  /** get_team_profile + get_team_trophies + season tournaments (division). */
   async getHeader(
-    _supabase: TypedSupabaseClient,
+    supabase: TypedSupabaseClient,
     teamId: string
   ): Promise<TeamProfileHeader | null> {
-    return { ...MOCK_TEAM_HEADER, id: teamId };
+    const [profile, trophies, { season, tournaments }] = await Promise.all([
+      getProfileRaw(supabase, teamId),
+      rpc<RpcTrophy[] | null>(supabase, "get_team_trophies", { p_team_id: teamId }),
+      getSeasonTournaments(supabase),
+    ]);
+    if (!profile) return null;
+
+    // The team's league this season (senior league first) → hero badge.
+    const byId = new Map(tournaments.map((t) => [t.id, t]));
+    const myLeagues = (profile.tournaments ?? [])
+      .map((m) => ({ m, t: byId.get(m.tournament_id) }))
+      .filter((x) => x.t?.type === "LEAGUE")
+      .sort((a, b) =>
+        (a.t?.category === "senior" ? 0 : 1) - (b.t?.category === "senior" ? 0 : 1)
+      );
+    const league = myLeagues[0];
+
+    const record = profile.record ?? { won: 0, lost: 0, drawn: 0, played: 0, points: 0 };
+    return {
+      id: profile.id,
+      name: profile.name,
+      color: clubColor(profile.id),
+      manager_name: profile.manager_name ?? "—",
+      season_label: profile.season_label ?? season.id,
+      formation: profile.formation ?? "4-3-3",
+      division_name: league?.t
+        ? `${league.t.name}${league.t.division ? ` · ${league.t.division}` : ""}`
+        : season.name,
+      division_position: positionLabel(league?.m.position ?? null),
+      squad_rating: profile.squad_rating ?? 0,
+      squad_value: profile.squad_value ?? 0,
+      squad_size: profile.squad_size ?? 0,
+      avg_age: profile.avg_age ?? 0,
+      form: (profile.team_form ?? []).map((f) => formToResult(f.result)),
+      record: {
+        played: record.played,
+        won: record.won,
+        drawn: record.drawn,
+        lost: record.lost,
+        points: record.points,
+      },
+      trophies: (trophies ?? []).map((tr) => ({
+        competition: tr.competition,
+        short_name: tr.division ? `${tr.competition} ${tr.division}` : tr.competition,
+        kind:
+          tr.kind === "LEAGUE" ? "league" : competitionKindOf("CUP", tr.competition),
+        seasons: tr.seasons ?? [],
+      })),
+    };
   },
 
-  /**
-   * TODO(db): `get_team_fixtures(p_team_id text, p_limit int default 5) → jsonb[]`
-   * Next unplayed matches (any competition), ordered by kickoff, with the rival
-   * club and its manager name.
-   */
+  /** PENDING matches across the team's tournaments, ordered by matchday. */
   async getFixtures(
-    _supabase: TypedSupabaseClient,
-    _teamId: string,
-    _limit = 5
+    supabase: TypedSupabaseClient,
+    teamId: string,
+    limit = 6
   ): Promise<TeamFixture[]> {
-    return MOCK_TEAM_FIXTURES;
+    const [matches, teams, { tournaments }] = await Promise.all([
+      getTeamMatches(supabase, teamId, "PENDING"),
+      getTeamsIndex(supabase),
+      getSeasonTournaments(supabase),
+    ]);
+    const typeById = new Map(tournaments.map((t) => [t.id, t.type]));
+    return matches
+      .sort(
+        (a, b) =>
+          (Number(a.plazo) || 999) - (Number(b.plazo) || 999) ||
+          (a.match_number ?? 0) - (b.match_number ?? 0)
+      )
+      .slice(0, limit)
+      .map((m) => {
+        const isHome = m.home_team_id === teamId;
+        const rivalId = (isHome ? m.away_team_id : m.home_team_id) as string;
+        const rival = teams.get(rivalId);
+        return {
+          id: m.id,
+          competition: m.tournament_name,
+          competition_kind: competitionKindOf(
+            typeById.get(m.tournament_id) ?? null,
+            m.tournament_name
+          ),
+          kickoff_at: m.scheduled_at,
+          plazo: m.plazo,
+          is_home: isHome,
+          rival: {
+            id: rivalId,
+            name: rival?.team_name ?? rivalId,
+            color: clubColor(rivalId),
+            manager_name: rival?.manager_id ?? "—",
+          },
+        };
+      });
   },
 
-  /**
-   * TODO(db): `get_team_results(p_team_id text, p_limit int default 5) → jsonb[]`
-   * Last played matches, newest first, with result from the team's POV.
-   */
+  /** PLAYED matches, most recent first (matches carry no real date — see plazo). */
   async getResults(
-    _supabase: TypedSupabaseClient,
-    _teamId: string,
-    _limit = 5
+    supabase: TypedSupabaseClient,
+    teamId: string,
+    limit = 5
   ): Promise<TeamMatchResult[]> {
-    return MOCK_TEAM_RESULTS;
+    const [matches, teams] = await Promise.all([
+      getTeamMatches(supabase, teamId, "PLAYED"),
+      getTeamsIndex(supabase),
+    ]);
+    return matches
+      .filter((m) => m.home_score !== null && m.away_score !== null)
+      .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
+      .slice(0, limit)
+      .map((m) => {
+        const isHome = m.home_team_id === teamId;
+        const gf = (isHome ? m.home_score : m.away_score) as number;
+        const ga = (isHome ? m.away_score : m.home_score) as number;
+        const rivalId = (isHome ? m.away_team_id : m.home_team_id) as string;
+        return {
+          id: m.id,
+          result: gf > ga ? "W" : gf === ga ? "D" : "L",
+          is_home: isHome,
+          rival_name: teams.get(rivalId)?.team_name ?? rivalId,
+          competition: m.tournament_name,
+          played_at: m.scheduled_at,
+          goals_for: gf,
+          goals_against: ga,
+        };
+      });
   },
 
-  /**
-   * TODO(db): `get_team_best_xi(p_team_id text) → jsonb` (BestXi)
-   * Best eleven by rating for the team's formation. Each player carries a
-   * `slot` index (0 = GK, then lines back → front); the UI maps it to pitch
-   * coordinates via `FORMATION_SLOTS`.
-   */
-  async getBestXi(
-    _supabase: TypedSupabaseClient,
-    _teamId: string
-  ): Promise<BestXi> {
-    return MOCK_TEAM_BEST_XI;
+  /** Best XI computed from the squad (highest rating fitting each slot). */
+  async getBestXi(supabase: TypedSupabaseClient, teamId: string): Promise<BestXi> {
+    const [profile, squad] = await Promise.all([
+      getProfileRaw(supabase, teamId),
+      getSquadRaw(supabase, teamId),
+    ]);
+    const formation =
+      profile?.formation && XI_SLOTS[profile.formation] ? profile.formation : "4-3-3";
+    const slots = XI_SLOTS[formation];
+    const pool = (squad ?? [])
+      .map((p) => ({
+        ...p,
+        codes: p.positions?.length ? p.positions : p.primary_position ? [p.primary_position] : [],
+      }))
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+
+    const used = new Set<string>();
+    const pick = (accepted: string[]) => {
+      const exact = pool.find(
+        (p) => !used.has(p.id) && p.codes.some((c) => accepted.includes(c))
+      );
+      const chosen =
+        exact ??
+        pool.find(
+          (p) =>
+            !used.has(p.id) &&
+            p.codes.some((c) => positionGroupOf(c) === positionGroupOf(accepted[0]))
+        ) ??
+        pool.find((p) => !used.has(p.id));
+      if (chosen) used.add(chosen.id);
+      return chosen;
+    };
+
+    return {
+      formation,
+      players: slots.flatMap((accepted, slot) => {
+        const p = pick(accepted);
+        return p
+          ? [{ player_id: p.id, short_name: surname(p.name), rating: p.rating ?? 0, slot }]
+          : [];
+      }),
+    };
   },
 
-  /**
-   * TODO(db): `get_team_standings(p_team_id text) → jsonb[]` (StandingsTable[])
-   * One table per active competition the team takes part in this season
-   * (league, cup group, youth group...), with `is_self` flagged on the team's
-   * row. Could also be a view `v_standings` filtered by competition_id.
-   */
+  /** One standings table per tournament the team plays this season. */
   async getStandings(
-    _supabase: TypedSupabaseClient,
-    _teamId: string
+    supabase: TypedSupabaseClient,
+    teamId: string
   ): Promise<StandingsTable[]> {
-    return MOCK_TEAM_STANDINGS;
+    const [profile, { tournaments }] = await Promise.all([
+      getProfileRaw(supabase, teamId),
+      getSeasonTournaments(supabase),
+    ]);
+    const mine = profile?.tournaments ?? [];
+    const typeById = new Map(tournaments.map((t) => [t.id, t.type]));
+    const tables = await Promise.all(
+      mine.map(async (t) => {
+        const rows =
+          (await rpc<StandingRowRaw[] | null>(supabase, "get_standings_by_tournament", {
+            p_tournament_id: t.tournament_id,
+          })) ?? [];
+        return {
+          competition_id: t.tournament_id,
+          competition_name: t.tournament_name,
+          rows: rows
+            .sort((a, b) => (a.position ?? 99) - (b.position ?? 99))
+            .map((r) => ({
+              position: r.position ?? 0,
+              team_id: r.team_id ?? "",
+              team_name: r.team_name ?? r.team_id ?? "—",
+              played: r.played ?? 0,
+              goal_diff: r.goal_difference ?? 0,
+              points: r.points ?? 0,
+              note: null,
+              is_self: r.team_id === teamId,
+            })),
+        };
+      })
+    );
+    // Leagues first (senior league is usually the one the user cares about).
+    return tables
+      .filter((t) => t.rows.length > 0)
+      .sort(
+        (a, b) =>
+          (typeById.get(a.competition_id) === "LEAGUE" ? 0 : 1) -
+          (typeById.get(b.competition_id) === "LEAGUE" ? 0 : 1)
+      );
   },
 
-  /**
-   * TODO(db): `get_team_squad(p_team_id text) → jsonb[]` (SquadPlayer[])
-   * Full current roster with season stats, salary, market value and
-   * transferable flag. Small enough (≤ 30 rows) for client-side filter/sort.
-   */
-  async getSquad(
-    _supabase: TypedSupabaseClient,
-    _teamId: string
-  ): Promise<SquadPlayer[]> {
-    return MOCK_TEAM_SQUAD;
+  /** get_squad + season stats aggregated across tournaments. */
+  async getSquad(supabase: TypedSupabaseClient, teamId: string): Promise<SquadPlayer[]> {
+    const [squad, stats] = await Promise.all([
+      getSquadRaw(supabase, teamId),
+      getAggregatedStats(supabase, teamId),
+    ]);
+    return (squad ?? [])
+      .map((p) => {
+        const s = stats.get(p.id);
+        const position = p.primary_position ?? p.positions?.[0] ?? null;
+        return {
+          player_id: p.id,
+          name: p.name,
+          nationality_flag: flagEmoji(p.nationality_code),
+          position: position ?? "—",
+          position_group: positionGroupOf(position),
+          rating: p.rating ?? 0,
+          played: s?.played ?? 0,
+          goals: s?.goals ?? 0,
+          assists: s?.assists ?? 0,
+          salary: p.salary ?? 0,
+          value: p.market_value ?? 0,
+          // TODO(db): no transferable flag in the DB yet — expose it on
+          // players (or get_squad) and map it here.
+          transferable: false,
+        };
+      })
+      .sort((a, b) => b.rating - a.rating);
   },
 
-  /**
-   * TODO(db): `get_team_highlights(p_team_id text) → jsonb` (TeamHighlights)
-   * Top scorer and MVP of the current season for the team.
-   */
+  /** Top scorer (goals) and MVP (mvps) from the aggregated season stats. */
   async getHighlights(
-    _supabase: TypedSupabaseClient,
-    _teamId: string
+    supabase: TypedSupabaseClient,
+    teamId: string
   ): Promise<TeamHighlights> {
-    return MOCK_TEAM_HIGHLIGHTS;
+    const [squad, stats] = await Promise.all([
+      getSquadRaw(supabase, teamId),
+      getAggregatedStats(supabase, teamId),
+    ]);
+    const byId = new Map((squad ?? []).map((p) => [p.id, p]));
+    const rows = [...stats.entries()].map(([id, s]) => ({ id, ...s }));
+    const top = (key: "goals" | "mvps") =>
+      [...rows].sort((a, b) => b[key] - a[key])[0];
+
+    const scorer = top("goals");
+    const mvp = top("mvps") ?? scorer;
+    const info = (id?: string) => (id ? byId.get(id) : undefined);
+    const sp = info(scorer?.id);
+    const mp = info(mvp?.id);
+    return {
+      top_scorer: {
+        player_id: scorer?.id ?? "",
+        name: sp?.name ?? "—",
+        position: sp?.primary_position ?? "—",
+        rating: sp?.rating ?? 0,
+        played: scorer?.played ?? 0,
+        goals: scorer?.goals ?? 0,
+      },
+      mvp: {
+        player_id: mvp?.id ?? "",
+        name: mp?.name ?? "—",
+        position: mp?.primary_position ?? "—",
+        rating: mp?.rating ?? 0,
+        goals: mvp?.goals ?? 0,
+        assists: mvp?.assists ?? 0,
+        mvp_awards: mvp?.mvps ?? 0,
+      },
+    };
   },
 
   /**
-   * TODO(db): `get_team_history(p_team_id text) → jsonb[]` (TeamSeasonEntry[])
-   * One row per (season, competition), newest season first, league first
-   * within the season. `achievement_kind` drives the color in the UI.
+   * TODO(db): still MOCKED. Needs per-season history (standings + stage per
+   * tournament for past seasons) — e.g. `get_team_history(p_team_id)`.
    */
   async getHistory(
     _supabase: TypedSupabaseClient,
@@ -146,8 +554,8 @@ export const teamProfileService = {
   },
 
   /**
-   * TODO(db): `get_team_records(p_team_id text) → jsonb[]` (TeamRecord[])
-   * All-time records (top scorer, most expensive signing/sale, best season).
+   * TODO(db): still MOCKED. Needs all-time records —
+   * e.g. `get_team_records(p_team_id)`.
    */
   async getRecords(
     _supabase: TypedSupabaseClient,
@@ -157,11 +565,9 @@ export const teamProfileService = {
   },
 
   /**
-   * TODO(db): `get_team_finances(p_team_id text, p_season_id text default null) → jsonb`
-   * (TeamFinances) Income/expenses/balance/budget for the season (current when
-   * null) plus the movement list. RLS: only the manager of the team or an
-   * admin should see this — enforce inside the function with `manages_team()`
-   * / `is_admin()`.
+   * TODO(db): still MOCKED. Needs finances —
+   * e.g. `get_team_finances(p_team_id, p_season_id)` guarded by
+   * manages_team()/is_admin().
    */
   async getFinances(
     _supabase: TypedSupabaseClient,

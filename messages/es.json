@@ -173,7 +173,7 @@
       "finances": "Finanzas"
     },
     "hero": {
-      "rank": "{position}° · {division}",
+      "rank": "{position} · {division}",
       "manager": "DT",
       "season": "Temporada {season}",
       "formation": "Formación {formation}",
@@ -192,6 +192,9 @@
       "manager": "DT",
       "contact": "Contactar rival",
       "submitResult": "Cargar resultado",
+      "plazo": "Plazo {n}",
+      "tbd": "A confirmar",
+      "empty": "No hay partidos pendientes",
       "prev": "Anterior",
       "next": "Siguiente"
     },

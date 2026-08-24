@@ -173,7 +173,7 @@
       "finances": "Finances"
     },
     "hero": {
-      "rank": "{position}{position, selectordinal, one {st} two {nd} few {rd} other {th}} · {division}",
+      "rank": "{position} · {division}",
       "manager": "Manager",
       "season": "Season {season}",
       "formation": "Formation {formation}",
@@ -192,6 +192,9 @@
       "manager": "Manager",
       "contact": "Contact rival",
       "submitResult": "Submit result",
+      "plazo": "Matchday {n}",
+      "tbd": "TBD",
+      "empty": "No upcoming matches",
       "prev": "Previous",
       "next": "Next"
     },
