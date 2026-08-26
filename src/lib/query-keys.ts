@@ -35,11 +35,35 @@ export const queryKeys = {
   },
   players: {
     all: ["players"] as const,
+    list: (params?: Record<string, unknown>) =>
+      ["players", "list", params ?? {}] as const,
+    catalogs: ["players", "catalogs"] as const,
     profile: (id: string) => ["players", "profile", id] as const,
     seasons: (id: string) => ["players", "seasons", id] as const,
     transfers: (id: string) => ["players", "transfers", id] as const,
     valueHistory: (id: string) => ["players", "value-history", id] as const,
-    valueRanking: (competitionId: string) =>
-      ["players", "value-ranking", competitionId] as const,
+    valueRanking: (playerId: string) =>
+      ["players", "value-ranking", playerId] as const,
+  },
+  dashboard: {
+    all: ["dashboard"] as const,
+    seasonInfo: ["dashboard", "season-info"] as const,
+    leagueTables: ["dashboard", "league-tables"] as const,
+    myFixtures: (teamId: string) =>
+      ["dashboard", "my-fixtures", teamId] as const,
+  },
+  competitions: {
+    all: ["competitions"] as const,
+    seasons: ["competitions", "seasons"] as const,
+    tournaments: (seasonId: string) =>
+      ["competitions", "tournaments", seasonId] as const,
+    standings: (tournamentId: string) =>
+      ["competitions", "standings", tournamentId] as const,
+    rounds: (tournamentId: string) =>
+      ["competitions", "rounds", tournamentId] as const,
+    matches: (tournamentId: string) =>
+      ["competitions", "matches", tournamentId] as const,
+    playerStats: (tournamentId: string) =>
+      ["competitions", "player-stats", tournamentId] as const,
   },
 } as const;

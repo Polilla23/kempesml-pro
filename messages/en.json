@@ -383,5 +383,85 @@
     "valueRank": {
       "title": "Value ranking · League"
     }
+  },
+  "playersPage": {
+    "searchPlaceholder": "Search player...",
+    "empty": "No players found",
+    "error": "Players could not be loaded",
+    "filters": {
+      "team": "Team",
+      "status": "Status",
+      "category": "Category",
+      "allTeams": "All teams",
+      "allStatuses": "All statuses",
+      "allCategories": "All categories"
+    },
+    "statuses": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "loaned": "On loan",
+      "free": "Free agent"
+    },
+    "columns": {
+      "player": "Player",
+      "nat": "Nat",
+      "pos": "Pos",
+      "age": "Age",
+      "rating": "OVR",
+      "team": "Team",
+      "salary": "Salary",
+      "value": "Value",
+      "status": "Status"
+    }
+  },
+  "competitions": {
+    "season": "Season",
+    "tournament": "Tournament",
+    "standings": {
+      "title": "Standings",
+      "empty": "This tournament has no standings table",
+      "club": "Club",
+      "played": "P",
+      "won": "W",
+      "drawn": "D",
+      "lost": "L",
+      "goalsFor": "GF",
+      "goalsAgainst": "GA",
+      "goalDiff": "GD",
+      "points": "Pts"
+    },
+    "stats": {
+      "searchPlaceholder": "Search player or team...",
+      "empty": "No stats for this tournament",
+      "error": "Stats could not be loaded",
+      "player": "Player",
+      "team": "Team",
+      "played": "P",
+      "goals": "G",
+      "assists": "A",
+      "mvps": "MVP",
+      "goalsPerMatch": "G/M"
+    },
+    "fixtures": {
+      "empty": "This tournament has no matches yet",
+      "round": "Matchday {n}",
+      "roundFinished": "Finished",
+      "pending": "vs",
+      "postponed": "Postponed",
+      "suspended": "Suspended"
+    }
+  },
+  "home": {
+    "seasonActive": "{season} in progress",
+    "tables": {
+      "title": "Divisions",
+      "fullTable": "Full table",
+      "empty": "No tables for this season yet",
+      "prev": "Previous division",
+      "next": "Next division"
+    },
+    "myMatches": {
+      "title": "Your matches"
+    }
   }
 }

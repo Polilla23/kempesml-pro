@@ -61,16 +61,26 @@ function Radar({ groups }: { groups: AttributeGroup[] }) {
 export function PlayerAttributes({ player }: { player: PlayerProfile }) {
   const t = useTranslations("playerProfile.attributes");
   const stars = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
+  const attributes = player.attributes;
+  if (!attributes) return null;
 
   return (
     <section className="rounded-xl bg-card p-4 ring-1 ring-foreground/10 md:p-6">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-[15px] font-extrabold">{t("title")}</h2>
         <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-[11px] text-muted-foreground">
-          <span>{t("skillMoves")} {stars(player.skill_moves)}</span>
-          <span>{t("weakFoot")} {stars(player.weak_foot)}</span>
-          <span>{t("attackRate")}: {t(`rates.${player.attacking_rate}`)}</span>
-          <span>{t("defRate")}: {t(`rates.${player.defensive_rate}`)}</span>
+          {player.skill_moves != null && (
+            <span>{t("skillMoves")} {stars(player.skill_moves)}</span>
+          )}
+          {player.weak_foot != null && (
+            <span>{t("weakFoot")} {stars(player.weak_foot)}</span>
+          )}
+          {player.attacking_rate && (
+            <span>{t("attackRate")}: {t(`rates.${player.attacking_rate}`)}</span>
+          )}
+          {player.defensive_rate && (
+            <span>{t("defRate")}: {t(`rates.${player.defensive_rate}`)}</span>
+          )}
         </div>
       </div>
 
@@ -83,18 +93,20 @@ export function PlayerAttributes({ player }: { player: PlayerProfile }) {
               </div>
               <div className="mt-1 text-[10px] tracking-wider text-muted-foreground uppercase">{t("overall")}</div>
             </div>
-            <div className="text-center">
-              <div className="text-4xl leading-none font-black text-emerald-600 dark:text-emerald-400">
-                {player.potential}
+            {player.potential != null && (
+              <div className="text-center">
+                <div className="text-4xl leading-none font-black text-emerald-600 dark:text-emerald-400">
+                  {player.potential}
+                </div>
+                <div className="mt-1 text-[10px] tracking-wider text-muted-foreground uppercase">{t("potential")}</div>
               </div>
-              <div className="mt-1 text-[10px] tracking-wider text-muted-foreground uppercase">{t("potential")}</div>
-            </div>
+            )}
           </div>
-          <Radar groups={player.attributes} />
+          <Radar groups={attributes} />
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-x-6 gap-y-4">
-          {player.attributes.map((g) => (
+          {attributes.map((g) => (
             <div key={g.key}>
               <div
                 className="mb-2 flex items-baseline justify-between border-b-2 pb-1.5"

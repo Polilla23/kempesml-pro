@@ -22,7 +22,10 @@ import { PlayerTransfers } from "./player-transfers";
 import { PlayerValueChart } from "./player-value-chart";
 import { PlayerValueRanking } from "./player-value-ranking";
 
-/** Player profile page body; each block fetches through its own hook. */
+/**
+ * Player profile page body. Blocks whose data the DB cannot provide yet
+ * (attributes, transfers, value history) hide themselves when empty.
+ */
 export function PlayerProfile({ playerId }: { playerId: string }) {
   const t = useTranslations("playerProfile");
 
@@ -30,9 +33,7 @@ export function PlayerProfile({ playerId }: { playerId: string }) {
   const seasons = usePlayerSeasons(playerId);
   const transfers = usePlayerTransfers(playerId);
   const values = usePlayerValueHistory(playerId);
-  // TODO(db): the ranking scope should be the league competition id; until the
-  // header returns one, the team's division name is used as the scope key.
-  const ranking = useValueRanking(profile.data?.team.division_name ?? "", playerId);
+  const ranking = useValueRanking(playerId);
 
   if (profile.isError || (profile.isSuccess && !profile.data)) {
     return (
@@ -44,18 +45,32 @@ export function PlayerProfile({ playerId }: { playerId: string }) {
     );
   }
 
+  const showSeasons = seasons.isLoading || (seasons.data?.length ?? 0) > 0;
+  const showTransfers = (transfers.data?.length ?? 0) > 0;
+  const showChart = (values.data?.length ?? 0) > 0;
+
   return (
     <div className="flex flex-col gap-5">
-      {profile.data ? <PlayerHero player={profile.data} /> : <Skeleton className="h-72 rounded-2xl" />}
-      {profile.data ? <PlayerAttributes player={profile.data} /> : <Skeleton className="h-80 rounded-xl" />}
+      {profile.data ? (
+        <PlayerHero player={profile.data} />
+      ) : (
+        <Skeleton className="h-72 rounded-2xl" />
+      )}
+      {profile.data && <PlayerAttributes player={profile.data} />}
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-5">
-          <PlayerSeasonsTable seasons={seasons.data} isLoading={seasons.isLoading} />
-          <PlayerTransfers transfers={transfers.data} isLoading={transfers.isLoading} />
+          {showSeasons && (
+            <PlayerSeasonsTable seasons={seasons.data} isLoading={seasons.isLoading} />
+          )}
+          {showTransfers && (
+            <PlayerTransfers transfers={transfers.data} isLoading={transfers.isLoading} />
+          )}
         </div>
         <div className="flex min-w-0 flex-col gap-5">
-          <PlayerValueChart points={values.data} isLoading={values.isLoading} />
+          {showChart && (
+            <PlayerValueChart points={values.data} isLoading={values.isLoading} />
+          )}
           <PlayerValueRanking rows={ranking.data} isLoading={ranking.isLoading} />
         </div>
       </div>

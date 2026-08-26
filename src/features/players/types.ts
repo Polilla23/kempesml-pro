@@ -1,11 +1,15 @@
 import type { CompetitionKind } from "@/lib/football";
+import type { Views } from "@/types/database.types";
+
+/** Row of the players list (`get_players` → SETOF v_players_full). */
+export type PlayerListItem = Views<"v_players_full">;
 
 /* -------------------------------------------------------------------------- */
 /*  Player profile                                                            */
 /*                                                                            */
-/*  JSON shapes the player RPCs are expected to return — see                  */
-/*  services/player-profile.service.ts. snake_case on purpose (Postgres       */
-/*  `jsonb_build_object`) so the swap from mocks to RPCs does not touch UI.   */
+/*  Shape consumed by the profile page. Fields the DB cannot provide yet are  */
+/*  nullable and their UI blocks hide themselves — see                        */
+/*  services/player-profile.service.ts for what is real vs pending.           */
 /* -------------------------------------------------------------------------- */
 
 /** Minimal club reference embedded in player payloads. */
@@ -70,34 +74,35 @@ export type PlayerProfile = {
   name: string;
   /** Surname / short display name for the card. */
   short_name: string;
-  /** Position code as stored in the DB ("DC", "MC", "POR"...). */
+  /** Primary position code as stored in the DB ("DC", "MC", "ARQ"...). */
   position: string;
-  /** Human label ("Delantero Centro"). */
-  position_label: string;
+  /** Other playable positions ("LD · MD"), if any. */
   secondary_position: string | null;
-  nationality: string;
+  nationality: string | null;
   nationality_flag: string;
-  /** ISO date. */
-  birth_date: string;
-  height_cm: number;
-  foot: Foot;
+  /** ISO date, when known. */
+  birth_date: string | null;
+  height_cm: number | null;
+  foot: Foot | null;
   salary: number;
-  /** Season label in which the player joined the current club. */
-  joined_season: string;
-  team: PlayerClubRef & { division_name: string };
-  value: number;
-  /** Rank by market value within the team's league (1 = most valuable). */
-  value_rank: number;
-  /** Average value of players with the same position in the league. */
-  position_avg_value: number;
+  /** Season label in which the player joined the current club (TODO(db)). */
+  joined_season: string | null;
+  team: (PlayerClubRef & { division_name: string | null }) | null;
+  /** External profile (SoFIFA), when scraped. */
+  sofifa_link: string | null;
+  value: number | null;
+  /** Rank by market value across the whole league system (1 = top). */
+  value_rank: number | null;
+  /** Average value of players with the same position (TODO(db)). */
+  position_avg_value: number | null;
   overall: number;
-  potential: number;
-  /** 1–5 stars. */
-  skill_moves: number;
-  weak_foot: number;
-  attacking_rate: WorkRate;
-  defensive_rate: WorkRate;
-  attributes: AttributeGroup[];
+  potential: number | null;
+  skill_moves: number | null;
+  weak_foot: number | null;
+  attacking_rate: WorkRate | null;
+  defensive_rate: WorkRate | null;
+  /** null until the DB exposes players_scrapped_stats. */
+  attributes: AttributeGroup[] | null;
 };
 
 export type PlayerSeasonCompetition = {
@@ -122,7 +127,7 @@ export type PlayerSeason = {
   assists: number;
   yellow_cards: number;
   red_cards: number;
-  value: number;
+  value: number | null;
   competitions: PlayerSeasonCompetition[];
 };
 

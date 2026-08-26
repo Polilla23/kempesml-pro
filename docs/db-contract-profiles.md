@@ -1,17 +1,21 @@
 # Contrato DB — Perfil de club y perfil de jugador
 
-> **Estado (2026-08-24):** el perfil de club ya está conectado a la API real
-> (`get_team_profile`, `get_team_trophies`, `get_squad`,
-> `get_standings_by_tournament`, `get_matches_by_tournament`,
-> `get_player_stats_by_tournament`, `get_team_tournaments`,
-> `get_tournaments_by_season`, `get_active_season`, `get_all_teams`), que es más
-> granular que lo propuesto abajo — el front compone en la capa de services.
-> **Sigue pendiente de backend:** historial multi-temporada del club, récords,
-> finanzas, y del jugador: atributos SoFIFA detallados, historial por temporada,
-> transferencias y evolución de valor. También faltan: flag `transferable` en
-> jugadores, color/escudo por club y fecha real de partidos (`scheduled_at`
-> viene null; el front muestra el `plazo`). Las secciones de abajo valen como
-> spec de lo pendiente.
+> **➡️ La lista viva de pendientes está en `db-pending-profiles.md`** (auditoría
+> pestaña por pestaña + prioridades). Este archivo queda como spec de formas.
+>
+> **Estado (2026-08-25):** el perfil de club ya está conectado a la API real
+> (`get_team_profile`, `get_team_trophies`, `get_team_fixtures`,
+> `get_team_results`, `get_squad`, `get_standings_by_tournament`,
+> `get_player_stats_by_tournament`, `get_tournaments_by_season`,
+> `get_active_season`, `get_all_teams`) — el front compone en la capa de
+> services. Existe `players_scrapped_stats` con los atributos SoFIFA (falta una
+> función/vista que la exponga para el perfil de jugador).
+> **Sigue pendiente de backend:** historial multi-temporada del club (§8),
+> récords (§9), finanzas (§10); del jugador: atributos (§11), historial por
+> temporada (§12), transferencias (§13) y evolución de valor (§14). Detalles
+> menores: flag `transferable`, color/escudo por club, fecha o plazo en
+> `get_team_fixtures`/`get_team_results` y `is_home` en `get_team_results`.
+> Las secciones de abajo valen como spec de lo pendiente.
 
 Funciones de Postgres (RPC vía Supabase) que el front necesita para las páginas
 `/teams/[id]` y `/players/[id]`. Hoy ambas páginas corren con datos mock que

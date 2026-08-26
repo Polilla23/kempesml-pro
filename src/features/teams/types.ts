@@ -80,7 +80,8 @@ export type TeamFixture = {
 export type TeamMatchResult = {
   id: string;
   result: MatchResult;
-  is_home: boolean;
+  /** null when the DB does not say on which side the team played. */
+  is_home: boolean | null;
   rival_name: string;
   competition: string;
   /** ISO date, or null when matches carry no real date (only a matchday). */

@@ -383,5 +383,85 @@
     "valueRank": {
       "title": "Ranking de valor · Liga"
     }
+  },
+  "playersPage": {
+    "searchPlaceholder": "Buscar jugador...",
+    "empty": "No se encontraron jugadores",
+    "error": "No se pudieron cargar los jugadores",
+    "filters": {
+      "team": "Equipo",
+      "status": "Estado",
+      "category": "Categoría",
+      "allTeams": "Todos los equipos",
+      "allStatuses": "Todos los estados",
+      "allCategories": "Todas las categorías"
+    },
+    "statuses": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "loaned": "Cedido",
+      "free": "Libre"
+    },
+    "columns": {
+      "player": "Jugador",
+      "nat": "Nac",
+      "pos": "Pos",
+      "age": "Edad",
+      "rating": "Med",
+      "team": "Equipo",
+      "salary": "Salario",
+      "value": "Valor",
+      "status": "Estado"
+    }
+  },
+  "competitions": {
+    "season": "Temporada",
+    "tournament": "Torneo",
+    "standings": {
+      "title": "Posiciones",
+      "empty": "Este torneo no tiene tabla de posiciones",
+      "club": "Club",
+      "played": "PJ",
+      "won": "G",
+      "drawn": "E",
+      "lost": "P",
+      "goalsFor": "GF",
+      "goalsAgainst": "GC",
+      "goalDiff": "DG",
+      "points": "Pts"
+    },
+    "stats": {
+      "searchPlaceholder": "Buscar jugador o equipo...",
+      "empty": "Sin estadísticas para este torneo",
+      "error": "No se pudieron cargar las estadísticas",
+      "player": "Jugador",
+      "team": "Equipo",
+      "played": "PJ",
+      "goals": "G",
+      "assists": "A",
+      "mvps": "MVP",
+      "goalsPerMatch": "G/P"
+    },
+    "fixtures": {
+      "empty": "Este torneo no tiene partidos cargados",
+      "round": "Fecha {n}",
+      "roundFinished": "Finalizada",
+      "pending": "vs",
+      "postponed": "Pospuesto",
+      "suspended": "Suspendido"
+    }
+  },
+  "home": {
+    "seasonActive": "{season} en curso",
+    "tables": {
+      "title": "Divisiones",
+      "fullTable": "Tabla completa",
+      "empty": "Todavía no hay tablas para esta temporada",
+      "prev": "División anterior",
+      "next": "División siguiente"
+    },
+    "myMatches": {
+      "title": "Tus partidos"
+    }
   }
 }

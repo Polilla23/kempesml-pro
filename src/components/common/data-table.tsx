@@ -61,6 +61,8 @@ type DataTableProps<TData, TValue> = {
   emptyMessage?: string;
   emptyIcon?: LucideIcon;
   pageSize?: number;
+  /** Client mode only: sorting applied on first render. */
+  initialSorting?: SortingState;
 
   /**
    * Server mode. When `manualPagination` is true, the parent owns pagination,
@@ -86,6 +88,7 @@ export function DataTable<TData, TValue>({
   emptyMessage,
   emptyIcon,
   pageSize = 10,
+  initialSorting,
   manualPagination,
   rowCount,
   pagination: paginationProp,
@@ -98,7 +101,7 @@ export function DataTable<TData, TValue>({
   const t = useTranslations("table");
   const isServer = !!manualPagination;
 
-  const [cSorting, setCSorting] = useState<SortingState>([]);
+  const [cSorting, setCSorting] = useState<SortingState>(initialSorting ?? []);
   const [cFilter, setCFilter] = useState("");
   const [cPagination, setCPagination] = useState<PaginationState>({
     pageIndex: 0,

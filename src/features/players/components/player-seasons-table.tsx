@@ -111,7 +111,9 @@ export function PlayerSeasonsTable({
                   <span className="text-center text-amber-600 dark:text-amber-400">{s.yellow_cards}</span>
                   <span className="text-center text-red-600 dark:text-red-400">{s.red_cards}</span>
                   <span className="text-center text-muted-foreground">{gpm(s.goals, s.played)}</span>
-                  <span className="text-right font-bold">{formatMoney(s.value)}</span>
+                  <span className="text-right font-bold">
+                    {s.value != null ? formatMoney(s.value) : "—"}
+                  </span>
                 </button>
 
                 {open &&

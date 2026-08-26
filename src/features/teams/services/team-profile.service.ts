@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- unused `_supabase`/`_teamId` params on the 3 still-mocked methods; remove when they get real RPCs */
 import {
   clubColor,
+  competitionKindOf,
   positionGroupOf,
-  type CompetitionKind,
   type MatchResult,
 } from "@/lib/football";
 import { flagEmoji } from "@/lib/format";
@@ -78,11 +78,31 @@ type RpcSquadPlayer = {
   market_value: number | null;
 };
 
-type RpcTeamRow = { id: string; team_name: string; manager_id: string | null };
+type RpcFixture = {
+  id: string;
+  is_home: boolean;
+  rival_id: string;
+  rival_team_name: string | null;
+  rival_manager_name: string | null;
+  competition: string;
+  competition_kind: string | null;
+  competition_division: string | null;
+};
+
+type RpcResult = {
+  id: string;
+  result: "W" | "D" | "L";
+  rival_id: string;
+  rival_team_name: string | null;
+  goals_for: number;
+  goals_against: number;
+  competition: string;
+  competition_kind: string | null;
+  competition_division: string | null;
+};
 
 type StandingRowRaw = Views<"v_standings_full">;
 type PlayerStatRow = Views<"v_tournament_player_stats">;
-type MatchRow = Tables<"matches">;
 type TournamentRow = Tables<"tournaments">;
 
 /* -------------------------------------------------------------------------- */
@@ -130,47 +150,12 @@ const getProfileRaw = (sb: TypedSupabaseClient, teamId: string) =>
 const getSquadRaw = (sb: TypedSupabaseClient, teamId: string) =>
   rpc<RpcSquadPlayer[] | null>(sb, "get_squad", { p_team_id: teamId });
 
-/** All teams, as a Map id → row (rival names for fixtures/results). */
-async function getTeamsIndex(sb: TypedSupabaseClient) {
-  const rows = (await rpc<RpcTeamRow[] | null>(sb, "get_all_teams")) ?? [];
-  return new Map(rows.map((t) => [t.id, t]));
-}
-
 async function getSeasonTournaments(sb: TypedSupabaseClient) {
   const season = await getActiveSeason(sb);
   const rows = await rpc<TournamentRow[] | null>(sb, "get_tournaments_by_season", {
     p_season_id: season.id,
   });
   return { season, tournaments: rows ?? [] };
-}
-
-/** PLAYED/PENDING matches of every tournament the team plays this season. */
-async function getTeamMatches(
-  sb: TypedSupabaseClient,
-  teamId: string,
-  status: "PENDING" | "PLAYED"
-) {
-  const profile = await getProfileRaw(sb, teamId);
-  const tournaments = profile?.tournaments ?? [];
-  const perTournament = await Promise.all(
-    tournaments.map((t) =>
-      rpc<MatchRow[] | null>(sb, "get_matches_by_tournament", {
-        p_tournament_id: t.tournament_id,
-        p_status: status,
-      })
-    )
-  );
-  const nameById = new Map(tournaments.map((t) => [t.tournament_id, t.tournament_name]));
-  return perTournament
-    .flatMap((rows) => rows ?? [])
-    .filter(
-      (m) =>
-        !m.bye_team_id &&
-        m.home_team_id &&
-        m.away_team_id &&
-        (m.home_team_id === teamId || m.away_team_id === teamId)
-    )
-    .map((m) => ({ ...m, tournament_name: nameById.get(m.tournament_id) ?? m.tournament_id }));
 }
 
 /** Season stats per player, aggregated across the team's tournaments. */
@@ -202,16 +187,6 @@ async function getAggregatedStats(sb: TypedSupabaseClient, teamId: string) {
 }
 
 /* -------------------------------- mappers --------------------------------- */
-
-/** "Copa de Oro" → gold, "Copa de Plata" → silver, "…Kempesitas…" cup → youth. */
-function competitionKindOf(type: string | null, name: string): CompetitionKind {
-  if (type === "LEAGUE") return "league";
-  const n = name.toLowerCase();
-  if (n.includes("oro")) return "gold";
-  if (n.includes("plata")) return "silver";
-  if (n.includes("kempesita")) return "youth";
-  return "cup";
-}
 
 const positionLabel = (position: string | null) =>
   position && /^\d+$/.test(position) ? `${position}°` : (position ?? "—");
@@ -308,79 +283,55 @@ export const teamProfileService = {
     };
   },
 
-  /** PENDING matches across the team's tournaments, ordered by matchday. */
+  /** get_team_fixtures(p_team_id, p_limit): next matches with rival resolved. */
   async getFixtures(
     supabase: TypedSupabaseClient,
     teamId: string,
     limit = 6
   ): Promise<TeamFixture[]> {
-    const [matches, teams, { tournaments }] = await Promise.all([
-      getTeamMatches(supabase, teamId, "PENDING"),
-      getTeamsIndex(supabase),
-      getSeasonTournaments(supabase),
-    ]);
-    const typeById = new Map(tournaments.map((t) => [t.id, t.type]));
-    return matches
-      .sort(
-        (a, b) =>
-          (Number(a.plazo) || 999) - (Number(b.plazo) || 999) ||
-          (a.match_number ?? 0) - (b.match_number ?? 0)
-      )
-      .slice(0, limit)
-      .map((m) => {
-        const isHome = m.home_team_id === teamId;
-        const rivalId = (isHome ? m.away_team_id : m.home_team_id) as string;
-        const rival = teams.get(rivalId);
-        return {
-          id: m.id,
-          competition: m.tournament_name,
-          competition_kind: competitionKindOf(
-            typeById.get(m.tournament_id) ?? null,
-            m.tournament_name
-          ),
-          kickoff_at: m.scheduled_at,
-          plazo: m.plazo,
-          is_home: isHome,
-          rival: {
-            id: rivalId,
-            name: rival?.team_name ?? rivalId,
-            color: clubColor(rivalId),
-            manager_name: rival?.manager_id ?? "—",
-          },
-        };
-      });
+    const rows =
+      (await rpc<RpcFixture[] | null>(supabase, "get_team_fixtures", {
+        p_team_id: teamId,
+        p_limit: limit,
+      })) ?? [];
+    return rows.map((m) => ({
+      id: m.id,
+      competition: m.competition,
+      competition_kind: competitionKindOf(m.competition_kind, m.competition),
+      // TODO(db): the RPC has no date/matchday yet — cards show "TBD".
+      kickoff_at: null,
+      plazo: null,
+      is_home: m.is_home,
+      rival: {
+        id: m.rival_id,
+        name: m.rival_team_name ?? m.rival_id,
+        color: clubColor(m.rival_id),
+        manager_name: m.rival_manager_name ?? "—",
+      },
+    }));
   },
 
-  /** PLAYED matches, most recent first (matches carry no real date — see plazo). */
+  /** get_team_results(p_team_id, p_limit): last played matches, newest first. */
   async getResults(
     supabase: TypedSupabaseClient,
     teamId: string,
     limit = 5
   ): Promise<TeamMatchResult[]> {
-    const [matches, teams] = await Promise.all([
-      getTeamMatches(supabase, teamId, "PLAYED"),
-      getTeamsIndex(supabase),
-    ]);
-    return matches
-      .filter((m) => m.home_score !== null && m.away_score !== null)
-      .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
-      .slice(0, limit)
-      .map((m) => {
-        const isHome = m.home_team_id === teamId;
-        const gf = (isHome ? m.home_score : m.away_score) as number;
-        const ga = (isHome ? m.away_score : m.home_score) as number;
-        const rivalId = (isHome ? m.away_team_id : m.home_team_id) as string;
-        return {
-          id: m.id,
-          result: gf > ga ? "W" : gf === ga ? "D" : "L",
-          is_home: isHome,
-          rival_name: teams.get(rivalId)?.team_name ?? rivalId,
-          competition: m.tournament_name,
-          played_at: m.scheduled_at,
-          goals_for: gf,
-          goals_against: ga,
-        };
-      });
+    const rows =
+      (await rpc<RpcResult[] | null>(supabase, "get_team_results", {
+        p_team_id: teamId,
+        p_limit: limit,
+      })) ?? [];
+    return rows.map((m) => ({
+      id: m.id,
+      result: m.result,
+      is_home: null, // TODO(db): not exposed by the RPC yet
+      rival_name: m.rival_team_name ?? m.rival_id,
+      competition: m.competition,
+      played_at: null, // TODO(db): matches carry no real date yet
+      goals_for: m.goals_for,
+      goals_against: m.goals_against,
+    }));
   },
 
   /** Best XI computed from the squad (highest rating fitting each slot). */

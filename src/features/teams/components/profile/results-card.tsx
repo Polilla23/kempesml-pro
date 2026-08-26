@@ -36,7 +36,8 @@ export function ResultsCard({
           <ResultPill result={m.result} />
           <div className="min-w-0 flex-1">
             <div className="truncate font-bold">
-              {m.is_home ? "vs" : "@"} {m.rival_name}
+              {m.is_home == null ? "" : m.is_home ? "vs " : "@ "}
+              {m.rival_name}
             </div>
             <div className="truncate text-[11px] text-muted-foreground">
               {m.competition}

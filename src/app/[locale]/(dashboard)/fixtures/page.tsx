@@ -1,6 +1,6 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { ComingSoon } from "@/components/common/coming-soon";
+import { FixturesView } from "@/features/competitions";
 import type { Locale } from "@/i18n/routing";
 
 export default async function FixturesPage({
@@ -11,5 +11,12 @@ export default async function FixturesPage({
   const { locale } = await params;
   setRequestLocale(locale as Locale);
 
-  return <ComingSoon titleKey="fixtures" />;
+  const t = await getTranslations("nav");
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold tracking-tight">{t("fixtures")}</h1>
+      <FixturesView />
+    </div>
+  );
 }

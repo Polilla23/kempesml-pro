@@ -45,13 +45,12 @@ export function usePlayerValueHistory(playerId: string) {
   });
 }
 
-/** Top-N by value in the league the player's team plays in. */
-export function useValueRanking(competitionId: string, playerId: string) {
+/** Global top-N by market value, with the player's own row appended. */
+export function useValueRanking(playerId: string) {
   const supabase = useSupabaseBrowser();
   return useQuery({
-    queryKey: [...queryKeys.players.valueRanking(competitionId), playerId],
-    queryFn: () =>
-      playerProfileService.getValueRanking(supabase, competitionId, playerId),
-    enabled: Boolean(competitionId) && Boolean(playerId),
+    queryKey: queryKeys.players.valueRanking(playerId),
+    queryFn: () => playerProfileService.getValueRanking(supabase, playerId),
+    enabled: Boolean(playerId),
   });
 }

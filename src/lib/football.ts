@@ -54,6 +54,22 @@ export function positionGroupOf(code: string | null | undefined): PositionGroup 
   return "FWD"; // DC, ED, EI, SD...
 }
 
+/**
+ * DB tournament (type LEAGUE/CUP + name) → UI kind. Gold/silver/youth cups are
+ * recognized by name ("Copa de Oro", "Copa de Plata", "…Kempesitas…").
+ */
+export function competitionKindOf(
+  type: string | null,
+  name: string
+): CompetitionKind {
+  if (type === "LEAGUE") return "league";
+  const n = name.toLowerCase();
+  if (n.includes("oro")) return "gold";
+  if (n.includes("plata")) return "silver";
+  if (n.includes("kempesita")) return "youth";
+  return "cup";
+}
+
 export function competitionIcon(kind: CompetitionKind) {
   return (
     { league: "🏟️", cup: "🏆", youth: "🏅", gold: "🥇", silver: "🥈" } as const
