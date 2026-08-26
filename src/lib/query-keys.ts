@@ -48,6 +48,12 @@ export const queryKeys = {
   dashboard: {
     all: ["dashboard"] as const,
     seasonInfo: ["dashboard", "season-info"] as const,
+    seasonSummary: ["dashboard", "season-summary"] as const,
+    champions: ["dashboard", "champions"] as const,
+    latestResults: ["dashboard", "latest-results"] as const,
+    plazo: (teamId: string) => ["dashboard", "plazo", teamId] as const,
+    transfersFeed: ["dashboard", "transfers-feed"] as const,
+    news: ["dashboard", "news"] as const,
     leagueTables: ["dashboard", "league-tables"] as const,
     myFixtures: (teamId: string) =>
       ["dashboard", "my-fixtures", teamId] as const,

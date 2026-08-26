@@ -10,6 +10,10 @@ Convenciones: las mismas de siempre (`jsonb` snake_case, dinero en enteros,
 listas vacías `[]`, `null` si no hay datos). Cada sección indica el `TODO(db)`
 que la referencia en el código.
 
+> Nota: el front ya renderiza TODOS estos bloques con datos mock (mismas
+> formas que se piden acá, en `src/features/dashboard/mocks/`), así que cada
+> función que entreguen se enchufa cambiando solo un método del service.
+
 ## §1 · KPIs del hero — `get_season_summary`
 
 ```sql

@@ -461,7 +461,28 @@
       "next": "División siguiente"
     },
     "myMatches": {
-      "title": "Tus partidos"
+      "title": "Tus partidos",
+      "deadline": "Plazo: vence en {time}",
+      "progress": "{loaded} de {total} partidos del plazo ya cargados"
+    },
+    "plazoLine": "Plazo {plazo} ({label}) · vence en {time}",
+    "kpis": {
+      "matches": "Partidos jugados",
+      "transfers": "Transferencias",
+      "money": "Dinero movido",
+      "prevSeason": "Temp. anterior"
+    },
+    "latestResults": {
+      "title": "Últimos resultados cargados",
+      "viewAll": "Ver todos"
+    },
+    "transfers": {
+      "title": "Últimas transferencias",
+      "goToMarket": "Ir al mercado"
+    },
+    "news": {
+      "title": "Noticias · Lo último de la KML",
+      "viewAll": "Ver todas"
     }
   }
 }

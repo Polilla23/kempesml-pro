@@ -1,7 +1,28 @@
+/* eslint-disable @typescript-eslint/no-unused-vars -- unused `_supabase` on the mocked methods; remove as their RPCs land */
 import type { TypedSupabaseClient } from "@/lib/supabase/types";
 import type { Tables, Views } from "@/types/database.types";
 
-import type { LeagueTable, SeasonInfo } from "../types";
+import { teamProfileService, type TeamFixture } from "@/features/teams";
+
+import {
+  MOCK_CHAMPIONS,
+  MOCK_LATEST_RESULTS,
+  MOCK_MY_FIXTURES,
+  MOCK_NEWS,
+  MOCK_PLAZO,
+  MOCK_SEASON_SUMMARY,
+  MOCK_TRANSFERS_FEED,
+} from "../mocks/dashboard.mock";
+import type {
+  LatestResult,
+  LeagueTable,
+  NewsItem,
+  PlazoInfo,
+  SeasonChampion,
+  SeasonInfo,
+  SeasonSummary,
+  TransferFeedItem,
+} from "../types";
 
 type TournamentRow = Tables<"tournaments">;
 type StandingRowRaw = Views<"v_standings_full">;
@@ -26,17 +47,11 @@ async function rpc<T>(
  * pending matches (via `teamProfileService.getFixtures`, consumed directly by
  * the home hooks).
  *
- * Blocks of the design that still need DB endpoints (see
- * docs/db-pending-home.md) and are NOT rendered yet:
- *  - TODO(db): `get_season_summary`      → hero KPIs (partidos jugados/total,
- *    transferencias y dinero movido de la temporada anterior).
- *  - TODO(db): `get_season_champions`    → campeones vigentes del hero.
- *  - TODO(db): `get_latest_results`      → carrusel global de resultados.
- *  - TODO(db): `get_latest_transfers`    → carrusel de transferencias
- *    (depende de la tabla `transfers`).
- *  - TODO(db): tabla `news` + `get_news` → grilla de noticias.
- *  - TODO(db): plazo vigente + deadline  → "Plazo 7 · vence en 2d 14h" del
- *    hero y el chip de "Tus partidos".
+ * The rest of the design renders MOCK data from `../mocks/dashboard.mock.ts`
+ * until its DB endpoints exist — each method below carries the TODO(db) with
+ * the function that replaces it (spec: docs/db-pending-home.md). Swapping is
+ * the usual drill: replace the body with the `rpc(...)` call, delete the mock
+ * import when the last one goes.
  */
 export const dashboardService = {
   /** Active season via get_active_season(). */
@@ -46,8 +61,8 @@ export const dashboardService = {
   },
 
   /**
-   * Every LEAGUE standings table of the active season (senior first), with
-   * manager names resolved from the teams list.
+   * The top-division (A) league tables of the active season — Liga Mayores A
+   * and Liga Kempesitas A — with manager names resolved from the teams list.
    * TODO(db): the "Forma" column of the design needs a last-5 form array per
    * standings row.
    */
@@ -64,7 +79,7 @@ export const dashboardService = {
     const managerOf = new Map(teams?.map((t) => [t.id, t.manager_id]));
 
     const leagues = (tournaments ?? [])
-      .filter((t) => t.type === "LEAGUE")
+      .filter((t) => t.type === "LEAGUE" && t.division === "A")
       .sort(
         (a, b) =>
           (a.category === "senior" ? 0 : 1) - (b.category === "senior" ? 0 : 1) ||
@@ -103,5 +118,79 @@ export const dashboardService = {
           })),
       }))
       .filter((t) => t.rows.length > 0);
+  },
+
+  /**
+   * Pending matches of the user's team. Real via get_team_fixtures; while the
+   * team has none (e.g. season finished), MOCK fixtures keep the card visible
+   * for design review — remove the fallback once real fixtures flow again.
+   */
+  async getMyFixtures(
+    supabase: TypedSupabaseClient,
+    teamId: string,
+    limit = 4
+  ): Promise<TeamFixture[]> {
+    const real = await teamProfileService.getFixtures(supabase, teamId, limit);
+    return real.length > 0 ? real : MOCK_MY_FIXTURES.slice(0, limit);
+  },
+
+  /**
+   * TODO(db): `get_season_summary(p_season_id default null)` — hero KPIs
+   * (docs/db-pending-home.md §1). MOCKED.
+   */
+  async getSeasonSummary(
+    _supabase: TypedSupabaseClient
+  ): Promise<SeasonSummary> {
+    return MOCK_SEASON_SUMMARY;
+  },
+
+  /**
+   * TODO(db): `get_season_champions(p_season_id default null)` — reigning
+   * champions per tournament (docs/db-pending-home.md §2). MOCKED.
+   */
+  async getChampions(
+    _supabase: TypedSupabaseClient
+  ): Promise<SeasonChampion[]> {
+    return MOCK_CHAMPIONS;
+  },
+
+  /**
+   * TODO(db): `get_latest_results(p_limit default 12)` — league-wide latest
+   * loaded results (docs/db-pending-home.md §3). MOCKED.
+   */
+  async getLatestResults(
+    _supabase: TypedSupabaseClient
+  ): Promise<LatestResult[]> {
+    return MOCK_LATEST_RESULTS;
+  },
+
+  /**
+   * TODO(db): `get_current_plazo()` + `get_team_plazo_progress(p_team_id)` —
+   * current matchday window, deadline and the user's progress
+   * (docs/db-pending-home.md §4). MOCKED.
+   */
+  async getCurrentPlazo(
+    _supabase: TypedSupabaseClient,
+    _teamId?: string
+  ): Promise<PlazoInfo> {
+    return MOCK_PLAZO;
+  },
+
+  /**
+   * TODO(db): `get_latest_transfers(p_limit default 12)` — market feed;
+   * depends on the transfers table (docs/db-pending-home.md §5). MOCKED.
+   */
+  async getLatestTransfers(
+    _supabase: TypedSupabaseClient
+  ): Promise<TransferFeedItem[]> {
+    return MOCK_TRANSFERS_FEED;
+  },
+
+  /**
+   * TODO(db): `get_news(p_limit default 6)` — news grid; depends on the news
+   * table (docs/db-pending-home.md §6). MOCKED.
+   */
+  async getNews(_supabase: TypedSupabaseClient): Promise<NewsItem[]> {
+    return MOCK_NEWS;
   },
 };

@@ -10,7 +10,9 @@ import { useCurrentProfile } from "@/features/profiles";
 import { competitionTextClass } from "@/lib/football";
 import { cn } from "@/lib/utils";
 
-import { useMyFixtures } from "../hooks/use-dashboard";
+import { formatTimeLeft } from "@/lib/format";
+
+import { useCurrentPlazo, useMyFixtures } from "../hooks/use-dashboard";
 
 /** Pending matches of the signed-in manager's team. Hidden if no team. */
 export function MyMatchesCard() {
@@ -18,6 +20,10 @@ export function MyMatchesCard() {
   const tf = useTranslations("teamProfile.fixtures");
   const teamId = useCurrentProfile().data?.team_id;
   const fixtures = useMyFixtures(teamId);
+  // TODO(db): MOCKED — get_current_plazo / get_team_plazo_progress
+  // (docs/db-pending-home.md §4).
+  const plazo = useCurrentPlazo(teamId);
+  const timeLeft = plazo.data ? formatTimeLeft(plazo.data.deadline) : null;
 
   if (!teamId) return null;
 
@@ -25,9 +31,13 @@ export function MyMatchesCard() {
     <SectionCard
       flush
       title={t("title")}
-      /* TODO(db): chip "Plazo: vence en 2d 14h" + pie "X de N partidos del
-         plazo ya cargados" — necesitan el endpoint de plazos
-         (docs/db-pending-home.md §4). */
+      action={
+        timeLeft && (
+          <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-extrabold text-amber-600 dark:text-amber-400">
+            {t("deadline", { time: timeLeft })}
+          </span>
+        )
+      }
     >
       {fixtures.isLoading && (
         <div className="space-y-2 p-4">
@@ -72,6 +82,11 @@ export function MyMatchesCard() {
           </div>
         </div>
       ))}
+      {plazo.data && (
+        <div className="border-t px-4 py-2.5 text-[11px] text-muted-foreground">
+          {t("progress", { loaded: plazo.data.loaded, total: plazo.data.total })} ✓
+        </div>
+      )}
     </SectionCard>
   );
 }

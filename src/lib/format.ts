@@ -66,6 +66,28 @@ export function yearsSince(iso: string, now = new Date()) {
   return years;
 }
 
+/** Compact time remaining until `iso`: "2d 14h", "14h", "35m"; null if past. */
+export function formatTimeLeft(iso: string, now = new Date()) {
+  const ms = new Date(iso).getTime() - now.getTime();
+  if (ms <= 0) return null;
+  const days = Math.floor(ms / 86_400_000);
+  const hours = Math.floor((ms % 86_400_000) / 3_600_000);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h`;
+  return `${Math.max(1, Math.floor(ms / 60_000))}m`;
+}
+
+/** Localized relative time: "hace 5 h" / "5 hr. ago". */
+export function formatRelativeTime(iso: string, locale: string, now = new Date()) {
+  const ms = new Date(iso).getTime() - now.getTime();
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "always", style: "narrow" });
+  const abs = Math.abs(ms);
+  if (abs < 3_600_000) return rtf.format(Math.round(ms / 60_000), "minute");
+  if (abs < 86_400_000) return rtf.format(Math.round(ms / 3_600_000), "hour");
+  if (abs < 7 * 86_400_000) return rtf.format(Math.round(ms / 86_400_000), "day");
+  return rtf.format(Math.round(ms / (7 * 86_400_000)), "week");
+}
+
 /** ISO-3166 alpha-2 code → flag emoji ("es" → 🇪🇸). Falls back to 🏳️. */
 export function flagEmoji(iso2: string | null | undefined) {
   if (!iso2 || iso2.length !== 2) return "🏳️";

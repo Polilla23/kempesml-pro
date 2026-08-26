@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { teamProfileService } from "@/features/teams";
+
 import { useSupabaseBrowser } from "@/hooks/use-supabase";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -25,12 +25,61 @@ export function useLeagueTables() {
   });
 }
 
-/** Pending matches of the signed-in manager's team (reuses the profile RPC). */
+export function useSeasonSummary() {
+  const supabase = useSupabaseBrowser();
+  return useQuery({
+    queryKey: queryKeys.dashboard.seasonSummary,
+    queryFn: () => dashboardService.getSeasonSummary(supabase),
+  });
+}
+
+export function useChampions() {
+  const supabase = useSupabaseBrowser();
+  return useQuery({
+    queryKey: queryKeys.dashboard.champions,
+    queryFn: () => dashboardService.getChampions(supabase),
+  });
+}
+
+export function useLatestResults() {
+  const supabase = useSupabaseBrowser();
+  return useQuery({
+    queryKey: queryKeys.dashboard.latestResults,
+    queryFn: () => dashboardService.getLatestResults(supabase),
+  });
+}
+
+export function useCurrentPlazo(teamId?: string | null) {
+  const supabase = useSupabaseBrowser();
+  return useQuery({
+    queryKey: queryKeys.dashboard.plazo(teamId ?? ""),
+    queryFn: () =>
+      dashboardService.getCurrentPlazo(supabase, teamId ?? undefined),
+  });
+}
+
+export function useLatestTransfers() {
+  const supabase = useSupabaseBrowser();
+  return useQuery({
+    queryKey: queryKeys.dashboard.transfersFeed,
+    queryFn: () => dashboardService.getLatestTransfers(supabase),
+  });
+}
+
+export function useNews() {
+  const supabase = useSupabaseBrowser();
+  return useQuery({
+    queryKey: queryKeys.dashboard.news,
+    queryFn: () => dashboardService.getNews(supabase),
+  });
+}
+
+/** Pending matches of the signed-in manager's team (mock while empty). */
 export function useMyFixtures(teamId: string | null | undefined) {
   const supabase = useSupabaseBrowser();
   return useQuery({
     queryKey: queryKeys.dashboard.myFixtures(teamId ?? ""),
-    queryFn: () => teamProfileService.getFixtures(supabase, teamId as string, 4),
+    queryFn: () => dashboardService.getMyFixtures(supabase, teamId as string, 4),
     enabled: Boolean(teamId),
   });
 }

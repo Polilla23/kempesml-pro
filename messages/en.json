@@ -461,7 +461,28 @@
       "next": "Next division"
     },
     "myMatches": {
-      "title": "Your matches"
+      "title": "Your matches",
+      "deadline": "Deadline: ends in {time}",
+      "progress": "{loaded} of {total} matchday games already loaded"
+    },
+    "plazoLine": "Matchday {plazo} ({label}) · ends in {time}",
+    "kpis": {
+      "matches": "Matches played",
+      "transfers": "Transfers",
+      "money": "Money moved",
+      "prevSeason": "Last season"
+    },
+    "latestResults": {
+      "title": "Latest loaded results",
+      "viewAll": "View all"
+    },
+    "transfers": {
+      "title": "Latest transfers",
+      "goToMarket": "Go to market"
+    },
+    "news": {
+      "title": "News · Latest from the KML",
+      "viewAll": "View all"
     }
   }
 }
