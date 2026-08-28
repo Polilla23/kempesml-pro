@@ -35,18 +35,20 @@ export const playersService = {
     { page, pageSize, search, sortId, sortDesc, teamId, status, category }: PlayersListParams
   ): Promise<PaginatedResult<PlayerListItem>> {
     const { from, to } = pageRange(page, pageSize);
-    let query = supabase
-      .rpc(
-        "get_players",
-        {
-          p_team_id: (teamId ?? null) as unknown as string,
-          p_status: (status ?? null) as unknown as string,
-          p_category: (category ?? null) as unknown as string,
-          p_search: (search?.trim() || null) as unknown as string,
-        },
-        { count: "exact" }
-      )
-      .range(from, to);
+    // TODO(db): get_players was removed in the SoFIFA restructure — this
+    // errors at runtime (the page shows its error state) until the
+    // replacement function lands; then restore the typed call.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function no longer in generated types
+    let query = (supabase.rpc as any)(
+      "get_players",
+      {
+        p_team_id: teamId ?? null,
+        p_status: status ?? null,
+        p_category: category ?? null,
+        p_search: search?.trim() || null,
+      },
+      { count: "exact" }
+    ).range(from, to);
     // nullsFirst:false — Postgres would otherwise put NULLs on top when DESC.
     query =
       sortId && SORTABLE.has(sortId)

@@ -74,8 +74,10 @@ type RpcSquadPlayer = {
   status: string | null;
   positions: string[] | null;
   primary_position: string | null;
-  nationality_code: string | null;
+  /** ISO-2 string historically; now a numeric SoFIFA country id. */
+  nationality_code: string | number | null;
   market_value: number | null;
+  photo_url: string | null;
 };
 
 type RpcFixture = {
@@ -197,25 +199,28 @@ const formToResult = (r: "win" | "draw" | "lose"): MatchResult =>
 /** "Artem Dovbyk" → "Dovbyk" (pitch labels). */
 const surname = (name: string) => name.trim().split(/\s+/).at(-1) ?? name;
 
-/** Preferred position codes per slot (0 = GK, then back → front lines). */
+/**
+ * Preferred position codes per slot (0 = GK, then back → front lines).
+ * Each slot accepts both the Spanish and the SoFIFA code sets.
+ */
 const XI_SLOTS: Record<string, string[][]> = {
   "4-3-3": [
-    ["ARQ"],
-    ["LI"], ["DFC"], ["DFC"], ["LD"],
-    ["MCD", "MC"], ["MC", "MCO", "MI"], ["MC", "MCO", "MD"],
-    ["EI", "MI"], ["DC"], ["ED", "MD"],
+    ["ARQ", "GK"],
+    ["LI", "LB", "LWB"], ["DFC", "CB"], ["DFC", "CB"], ["LD", "RB", "RWB"],
+    ["MCD", "CDM", "MC", "CM"], ["MC", "CM", "MCO", "CAM", "MI", "LM"], ["MC", "CM", "MCO", "CAM", "MD", "RM"],
+    ["EI", "LW", "MI", "LM"], ["DC", "ST", "CF"], ["ED", "RW", "MD", "RM"],
   ],
   "4-4-2": [
-    ["ARQ"],
-    ["LI"], ["DFC"], ["DFC"], ["LD"],
-    ["MI", "EI"], ["MC", "MCD"], ["MC", "MCO"], ["MD", "ED"],
-    ["DC"], ["DC", "MCO"],
+    ["ARQ", "GK"],
+    ["LI", "LB", "LWB"], ["DFC", "CB"], ["DFC", "CB"], ["LD", "RB", "RWB"],
+    ["MI", "LM", "EI", "LW"], ["MC", "CM", "MCD", "CDM"], ["MC", "CM", "MCO", "CAM"], ["MD", "RM", "ED", "RW"],
+    ["DC", "ST", "CF"], ["DC", "ST", "CF", "MCO", "CAM"],
   ],
   "3-5-2": [
-    ["ARQ"],
-    ["DFC"], ["DFC"], ["DFC"],
-    ["MI", "LI"], ["MC", "MCD"], ["MCD", "MC"], ["MC", "MCO"], ["MD", "LD"],
-    ["DC"], ["DC", "MCO"],
+    ["ARQ", "GK"],
+    ["DFC", "CB"], ["DFC", "CB"], ["DFC", "CB"],
+    ["MI", "LM", "LI", "LB"], ["MC", "CM", "MCD", "CDM"], ["MCD", "CDM", "MC", "CM"], ["MC", "CM", "MCO", "CAM"], ["MD", "RM", "LD", "RB"],
+    ["DC", "ST", "CF"], ["DC", "ST", "CF", "MCO", "CAM"],
   ],
 };
 
@@ -436,6 +441,7 @@ export const teamProfileService = {
         return {
           player_id: p.id,
           name: p.name,
+          photo_url: p.photo_url,
           nationality_flag: flagEmoji(p.nationality_code),
           position: position ?? "—",
           position_group: positionGroupOf(position),

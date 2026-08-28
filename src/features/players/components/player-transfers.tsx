@@ -2,10 +2,10 @@
 
 import { useLocale, useTranslations } from "next-intl";
 
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { SectionCard } from "@/components/common/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TeamAvatar } from "@/features/teams";
 import { Link } from "@/i18n/navigation";
 import { formatMoney, formatShortDate } from "@/lib/format";
 
@@ -50,12 +50,12 @@ export function PlayerTransfers({
             <div className="text-[11px] text-muted-foreground">{formatShortDate(tr.date, locale)}</div>
           </div>
           <div className="flex min-w-0 flex-1 basis-56 items-center gap-2.5">
-            <ClubAvatar name={tr.from.name} color={tr.from.color} size="sm" />
+            <TeamAvatar teamId={tr.from.id} name={tr.from.name} size="sm" />
             <Link href={`/teams/${tr.from.id}`} className="truncate text-[13px] text-foreground/80 hover:underline">
               {tr.from.name}
             </Link>
             <span className="shrink-0 font-extrabold text-primary">→</span>
-            <ClubAvatar name={tr.to.name} color={tr.to.color} size="sm" />
+            <TeamAvatar teamId={tr.to.id} name={tr.to.name} size="sm" />
             <Link href={`/teams/${tr.to.id}`} className="truncate text-[13px] font-semibold hover:underline">
               {tr.to.name}
             </Link>

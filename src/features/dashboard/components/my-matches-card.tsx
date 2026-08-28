@@ -2,11 +2,11 @@
 
 import { useTranslations } from "next-intl";
 
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { SectionCard } from "@/components/common/section-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentProfile } from "@/features/profiles";
+import { TeamAvatar } from "@/features/teams";
 import { competitionTextClass } from "@/lib/football";
 import { cn } from "@/lib/utils";
 
@@ -62,7 +62,7 @@ export function MyMatchesCard() {
             )}
           </div>
           <div className="flex items-center gap-2.5 text-[13px]">
-            <ClubAvatar name={fx.rival.name} color={fx.rival.color} size="sm" />
+            <TeamAvatar teamId={fx.rival.id} name={fx.rival.name} size="sm" />
             <span className="min-w-0 flex-1 truncate font-bold">
               {fx.is_home ? "vs" : "@"} {fx.rival.name}
             </span>

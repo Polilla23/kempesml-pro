@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { SectionCard } from "@/components/common/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TeamAvatar } from "@/features/teams";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -121,10 +121,10 @@ export function PlayerValueChart({
         </svg>
 
         {stints.map((s) => (
-          <ClubAvatar
+          <TeamAvatar
             key={s.index}
+            teamId={s.team.id}
             name={s.team.name}
-            color={s.team.color}
             size="sm"
             className="pointer-events-none absolute -translate-1/2 border-2 border-background shadow-md"
             // Positioned in % of the SVG box so it scales with it.

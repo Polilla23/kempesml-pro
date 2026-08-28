@@ -14,7 +14,11 @@ que la referencia en el código.
 > formas que se piden acá, en `src/features/dashboard/mocks/`), así que cada
 > función que entreguen se enchufa cambiando solo un método del service.
 
-## §1 · KPIs del hero — `get_season_summary`
+## §1 · KPIs del hero — `get_season_summary` ✅ (conectada)
+
+> Entregada y conectada, métricas de transferencias incluidas (2026-08-27).
+> Devuelve `total_matches` (el front mapea a `matches_total`); el typo
+> `transfers_ammpunt` ya fue corregido.
 
 ```sql
 get_season_summary(p_season_id text default null) → jsonb
@@ -34,7 +38,10 @@ get_season_summary(p_season_id text default null) → jsonb
   (pedido D1 de `db-pending-profiles.md`); mientras no exista, devolver `null`
   y el front las oculta.
 
-## §2 · Campeones vigentes — `get_season_champions`
+## §2 · Campeones vigentes — `get_season_champions` ✅ (conectada)
+
+> Entregada y conectada (2026-08-26). El front ordena y muestra 4: liga senior
+> A, liga kempesitas A, Copa de Oro y el resto.
 
 ```sql
 get_season_champions(p_season_id text default null) → jsonb
@@ -47,7 +54,13 @@ get_season_champions(p_season_id text default null) → jsonb
 ```
 Sale de `trophies` + `tournaments`. Orden sugerido: ligas senior primero.
 
-## §3 · Últimos resultados globales — `get_latest_results`
+## §3 · Últimos resultados globales — `get_latest_results` ✅ (conectada)
+
+> Entregada y conectada (2026-08-27). Un fix pendiente: el campo `competition`
+> devuelve el TIPO ("CUP") en vez del **nombre del torneo** ("Copa Cindor
+> Kempesitas T31"); mientras tanto el front lo resuelve con `tournament_id`
+> contra los torneos de la temporada activa (falla si algún resultado fuera de
+> otra temporada). Confirmar también que el orden sea `loaded_at desc`.
 
 Como `get_team_results` pero de TODA la liga (el carrusel de la home):
 
@@ -79,9 +92,17 @@ get_team_plazo_progress(p_team_id text) → jsonb
 Seguramente implique una tabla de plazos por temporada (plazo → fechas que
 abarca + deadline) — hoy esa data no está modelada.
 
-## §5 · Últimas transferencias — `get_latest_transfers`
+## §5 · Últimas transferencias — `get_latest_transfers` ✅ (conectada)
 
-Depende de la tabla `transfers` (pedido D1 de `db-pending-profiles.md`).
+> Entregada y conectada (2026-08-27). `kind` viene en mayúsculas
+> (`TRANSFER`/`LOAN`/…) — el front mapea. Con la tabla `transfers` existiendo,
+> se desbloquea también `get_player_transfers` (§13 de
+> `db-pending-profiles.md`) para el perfil de jugador.
+>
+> 🐛 **Fix pendiente (confirmado, se arregla en la función)**: devuelve filas
+> duplicadas (mismo `id` dos veces; la tabla `transfers` tiene ids únicos, así
+> que algún join multiplica — sospecha: `transfer_installments`). El front NO
+> dedupea a propósito: cuando la función devuelva filas únicas, listo.
 
 ```sql
 get_latest_transfers(p_limit int default 12) → jsonb

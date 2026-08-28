@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl";
 
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { ResultPill } from "@/components/common/result-pill";
 import { Badge } from "@/components/ui/badge";
 import { competitionIcon, trophyChipClass } from "@/lib/football";
@@ -10,6 +9,7 @@ import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import type { TeamProfileHeader } from "../../types";
+import { TeamAvatar } from "../team-avatar";
 
 function Stat({ label, value, accent }: { label: string; value: React.ReactNode; accent?: boolean }) {
   return (
@@ -30,7 +30,7 @@ export function TeamHero({ team }: { team: TeamProfileHeader }) {
   return (
     <section className="flex flex-col gap-4 rounded-2xl bg-linear-to-r from-primary/25 via-primary/8 to-card p-4 ring-1 ring-foreground/10 md:gap-5 md:p-7">
       <div className="flex flex-wrap items-center gap-4 md:gap-6">
-        <ClubAvatar name={team.name} color={team.color} size="xl" className="shadow-lg" />
+        <TeamAvatar teamId={team.id} name={team.name} size="xl" className="shadow-lg" />
 
         <div className="flex min-w-0 flex-1 basis-64 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2 md:gap-3">

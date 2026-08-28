@@ -1,25 +1,22 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { AutoCarousel } from "@/components/common/auto-carousel";
 import { ClubAvatar } from "@/components/common/club-avatar";
+import { PlayerAvatar } from "@/components/common/player-avatar";
 import { SectionCard } from "@/components/common/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
 import { clubColor } from "@/lib/football";
-import { formatMoney, formatRelativeTime, initials } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 
 import { useLatestTransfers } from "../hooks/use-dashboard";
 
-/**
- * TODO(db): MOCKED feed — swap to `get_latest_transfers` once the transfers
- * table exists (docs/db-pending-home.md §5); only the service changes.
- */
+/** Market feed (real, get_latest_transfers) with crests from the RPC. */
 export function TransfersFeed() {
   const t = useTranslations("home.transfers");
   const tk = useTranslations("playerProfile.transfers.kinds");
-  const locale = useLocale();
   const transfers = useLatestTransfers();
 
   return (
@@ -46,9 +43,7 @@ export function TransfersFeed() {
               key={tr.id}
               className="flex w-72 shrink-0 items-center gap-3 rounded-xl border bg-background/40 p-3.5"
             >
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted text-base font-black text-muted-foreground">
-                {initials(tr.player_name)}
-              </div>
+              <PlayerAvatar name={tr.player_name} src={tr.photo_url} />
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/players/${tr.player_id}`}
@@ -56,14 +51,24 @@ export function TransfersFeed() {
                 >
                   {tr.player_name}
                 </Link>
-                <div className="text-[10px] text-muted-foreground">
-                  {tr.position} · {formatRelativeTime(tr.date, locale)}
-                </div>
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <ClubAvatar name={tr.from_team_name} color={clubColor(tr.from_team_id)} size="xs" />
-                  <span className="text-xs font-black text-primary">→</span>
-                  <ClubAvatar name={tr.to_team_name} color={clubColor(tr.to_team_id)} size="xs" />
-                  <span className="truncate text-[10px] text-muted-foreground">{tr.to_team_name}</span>
+                <div className="mt-2 flex items-center gap-2.5">
+                  <span title={tr.from_team_name}>
+                    <ClubAvatar
+                      name={tr.from_team_name}
+                      color={clubColor(tr.from_team_id)}
+                      src={tr.from_team_logo}
+                      size="lg"
+                    />
+                  </span>
+                  <span className="text-base font-black text-primary">→</span>
+                  <span title={tr.to_team_name}>
+                    <ClubAvatar
+                      name={tr.to_team_name}
+                      color={clubColor(tr.to_team_id)}
+                      src={tr.to_team_logo}
+                      size="lg"
+                    />
+                  </span>
                 </div>
               </div>
               <div className="shrink-0 text-right">

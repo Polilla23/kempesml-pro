@@ -5,6 +5,9 @@ import type { TypedSupabaseClient } from "@/lib/supabase/types";
 import type { Views } from "@/types/database.types";
 
 import type {
+  AttributeGroup,
+  AttributeKey,
+  PlayerListItem,
   PlayerProfile,
   PlayerSeason,
   PlayerTransfer,
@@ -12,8 +15,81 @@ import type {
   ValueRankRow,
 } from "../types";
 
-type PlayerRow = Views<"v_players_full">;
+// TODO(db): get_players is still missing after the SoFIFA restructure — the
+// list page and the value ranking error until its replacement lands. Shape
+// kept in PlayerListItem (../types.ts).
+type PlayerRow = PlayerListItem;
 type StatRow = Views<"v_tournament_player_stats">;
+
+/** Raw payload of the restored get_player_by_id (2026-08-28). */
+type RpcSofifa = {
+  overall_rating: number | null;
+  potential: number | null;
+  height: number | null;
+  foot: number | null;
+  skill_moves: number | null;
+  weak_foot: number | null;
+  atk_work_rate: string | null;
+  def_work_rate: string | null;
+  pace: number | null;
+  shooting: number | null;
+  passing: number | null;
+  dribbling_overall: number | null;
+  defending: number | null;
+  physical: number | null;
+  acceleration: number | null;
+  sprint_speed: number | null;
+  positioning: number | null;
+  finishing: number | null;
+  shot_power: number | null;
+  long_shots: number | null;
+  volleys: number | null;
+  penalties: number | null;
+  vision: number | null;
+  crossing: number | null;
+  fk_accuracy: number | null;
+  short_passing: number | null;
+  long_passing: number | null;
+  curve: number | null;
+  agility: number | null;
+  balance: number | null;
+  reactions: number | null;
+  ball_control: number | null;
+  dribbling: number | null;
+  composure: number | null;
+  interceptions: number | null;
+  heading: number | null;
+  def_awareness: number | null;
+  standing_tackle: number | null;
+  sliding_tackle: number | null;
+  jumping: number | null;
+  stamina: number | null;
+  strength: number | null;
+  aggression: number | null;
+};
+
+type RpcPlayer = {
+  id: string;
+  name: string | null;
+  birth_date: string | null;
+  country: string | null;
+  nationality_code: string | number | null;
+  photo_url: string | null;
+  /** TODO(db): not in the payload yet. */
+  salary?: number | null;
+  status: string | null;
+  category: string | null;
+  /** Category label ("Senior"). */
+  label: string | null;
+  position_abbr: string | null;
+  positions: string[] | null;
+  current_team_id: string | null;
+  loaned_team_id: string | null;
+  sofifa_link: string | null;
+  market_value: number | null;
+  rating: number | null;
+  sofifa: RpcSofifa | null;
+};
 
 type RpcSeason = { id: string; name: string };
 type RpcTeamRow = { id: string; team_name: string };
@@ -37,13 +113,38 @@ async function rpc<T>(
 }
 
 async function getPlayerRaw(supabase: TypedSupabaseClient, playerId: string) {
-  const data = await rpc<PlayerRow | PlayerRow[] | null>(
+  const data = await rpc<RpcPlayer | RpcPlayer[] | null>(
     supabase,
     "get_player_by_id",
-    { p_id: playerId }
+    { p_player_id: playerId }
   );
   const row = Array.isArray(data) ? data[0] : data;
   return row ?? null;
+}
+
+/** EA/SoFIFA preferred-foot code. TODO(db): confirm the mapping. */
+const footOf = (n: number | null | undefined): "left" | "right" | null =>
+  n === 1 ? "right" : n === 2 ? "left" : null;
+
+const workRateOf = (w: string | null | undefined) => {
+  const lw = w?.toLowerCase();
+  return lw === "low" || lw === "medium" || lw === "high" ? lw : null;
+};
+
+/** The 6 attribute groups for the hexagon + grid, from the sofifa block. */
+function buildAttributes(s: RpcSofifa | null) {
+  if (!s) return null;
+  const items = (pairs: [AttributeKey, number | null][]) =>
+    pairs.flatMap(([key, value]) => (value != null ? [{ key, value }] : []));
+  const groups: AttributeGroup[] = [
+    { key: "pace", value: s.pace ?? 0, items: items([["acceleration", s.acceleration], ["sprint_speed", s.sprint_speed]]) },
+    { key: "shooting", value: s.shooting ?? 0, items: items([["positioning", s.positioning], ["finishing", s.finishing], ["shot_power", s.shot_power], ["long_shots", s.long_shots], ["volleys", s.volleys], ["penalties", s.penalties]]) },
+    { key: "passing", value: s.passing ?? 0, items: items([["vision", s.vision], ["crossing", s.crossing], ["fk_accuracy", s.fk_accuracy], ["short_passing", s.short_passing], ["long_passing", s.long_passing], ["curve", s.curve]]) },
+    { key: "dribbling", value: s.dribbling_overall ?? 0, items: items([["agility", s.agility], ["balance", s.balance], ["reactions", s.reactions], ["ball_control", s.ball_control], ["dribbling", s.dribbling], ["composure", s.composure]]) },
+    { key: "defending", value: s.defending ?? 0, items: items([["interceptions", s.interceptions], ["heading_accuracy", s.heading], ["def_awareness", s.def_awareness], ["standing_tackle", s.standing_tackle], ["sliding_tackle", s.sliding_tackle]]) },
+    { key: "physical", value: s.physical ?? 0, items: items([["jumping", s.jumping], ["stamina", s.stamina], ["strength", s.strength], ["aggression", s.aggression]]) },
+  ];
+  return groups.some((grp) => grp.value > 0 || grp.items.length > 0) ? groups : null;
 }
 
 /** "Alejandro Frances" → "Frances". */
@@ -73,63 +174,59 @@ export const playerProfileService = {
     const [teams, rank] = await Promise.all([
       rpc<RpcTeamRow[] | null>(supabase, "get_all_teams"),
       player.market_value != null
-        ? supabase
-            .rpc(
-              "get_players",
-              {
-                p_team_id: null as unknown as string,
-                p_status: null as unknown as string,
-                p_category: null as unknown as string,
-                p_search: null as unknown as string,
-              },
-              { count: "exact", head: true }
-            )
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_players gone from generated types (TODO(db): still missing)
+          (supabase.rpc as any)(
+            "get_players",
+            { p_team_id: null, p_status: null, p_category: null, p_search: null },
+            { count: "exact", head: true }
+          )
             .gt("market_value", player.market_value)
-            .then(({ count, error }) => {
-              if (error) throw error;
-              return count != null ? count + 1 : null;
-            })
+            .then(({ count }: { count: number | null }) =>
+              count != null ? count + 1 : null
+            )
+            // TODO(db): get_players is gone — no ranking until it's back.
+            .catch(() => null)
         : Promise.resolve(null),
     ]);
     const teamName = teams?.find((t) => t.id === teamId)?.team_name;
 
+    const s = player.sofifa;
     const positions = player.positions ?? [];
-    const secondary = positions
-      .filter((p) => p !== player.primary_position)
-      .join(" · ");
+    const primary = player.position_abbr ?? positions[0] ?? "—";
+    const secondary = positions.filter((p) => p !== primary).join(" · ");
 
     return {
       id: player.id,
       name: player.name ?? player.id,
       short_name: surname(player.name ?? player.id),
-      position: player.primary_position ?? positions[0] ?? "—",
+      position: primary,
       secondary_position: secondary || null,
-      nationality: player.nationality,
+      nationality: player.country,
       nationality_flag: flagEmoji(player.nationality_code),
       birth_date: player.birth_date,
-      height_cm: null, // TODO(db): not stored yet
-      foot: null, // TODO(db): not stored yet
-      salary: player.salary ?? 0,
+      height_cm: s?.height ?? null,
+      foot: footOf(s?.foot),
+      salary: player.salary ?? 0, // TODO(db): salary missing from the payload
       joined_season: null, // TODO(db): no squad history per season yet
       team: teamId
         ? {
             id: teamId,
             name: teamName ?? teamId,
             color: clubColor(teamId),
-            division_name: player.category_label,
+            division_name: player.label,
           }
         : null,
       sofifa_link: player.sofifa_link,
       value: player.market_value,
       value_rank: rank,
       position_avg_value: null, // TODO(db): needs an aggregate function
-      overall: player.rating ?? 0,
-      potential: null, // TODO(db): not scraped yet
-      skill_moves: null, // TODO(db): not scraped yet
-      weak_foot: null, // TODO(db): not scraped yet
-      attacking_rate: null, // TODO(db): not scraped yet
-      defensive_rate: null, // TODO(db): not scraped yet
-      attributes: null, // TODO(db): expose players_scrapped_stats via RPC
+      overall: player.rating ?? s?.overall_rating ?? 0,
+      potential: s?.potential ?? null,
+      skill_moves: s?.skill_moves ?? null,
+      weak_foot: s?.weak_foot ?? null,
+      attacking_rate: workRateOf(s?.atk_work_rate),
+      defensive_rate: workRateOf(s?.def_work_rate),
+      attributes: buildAttributes(s),
     };
   },
 
@@ -191,7 +288,7 @@ export const playerProfileService = {
           name: teams?.find((t) => t.id === teamId)?.team_name ?? teamId,
           color: clubColor(teamId),
         },
-        division_name: player.category_label ?? "—",
+        division_name: player.label ?? "—",
         rating: player.rating ?? 0,
         played: sum("played"),
         goals: sum("goals"),
@@ -226,15 +323,15 @@ export const playerProfileService = {
     playerId: string
   ): Promise<ValueRankRow[]> {
     const [{ data, error }, teams, player] = await Promise.all([
-      supabase
-        .rpc("get_players", {
-          p_team_id: null as unknown as string,
-          p_status: null as unknown as string,
-          p_category: null as unknown as string,
-          p_search: null as unknown as string,
-        })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_players gone from generated types (TODO(db): removed in restructure)
+      (supabase.rpc as any)("get_players", {
+        p_team_id: null,
+        p_status: null,
+        p_category: null,
+        p_search: null,
+      })
         .order("market_value", { ascending: false, nullsFirst: false })
-        .range(0, 4),
+        .range(0, 4) as Promise<{ data: PlayerRow[] | null; error: unknown }>,
       rpc<RpcTeamRow[] | null>(supabase, "get_all_teams"),
       getPlayerRaw(supabase, playerId),
     ]);
@@ -252,18 +349,12 @@ export const playerProfileService = {
     }));
 
     if (!rows.some((r) => r.is_self) && player?.market_value != null) {
-      const { count } = await supabase
-        .rpc(
-          "get_players",
-          {
-            p_team_id: null as unknown as string,
-            p_status: null as unknown as string,
-            p_category: null as unknown as string,
-            p_search: null as unknown as string,
-          },
-          { count: "exact", head: true }
-        )
-        .gt("market_value", player.market_value);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_players gone from generated types (TODO(db): removed in restructure)
+      const { count } = (await (supabase.rpc as any)(
+        "get_players",
+        { p_team_id: null, p_status: null, p_category: null, p_search: null },
+        { count: "exact", head: true }
+      ).gt("market_value", player.market_value)) as { count: number | null };
       rows.push({
         position: (count ?? 0) + 1,
         player_id: playerId,

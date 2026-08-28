@@ -4,14 +4,12 @@ import { useMemo } from "react";
 import { CalendarDays } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { EmptyState } from "@/components/common/empty-state";
 import { SectionCard } from "@/components/common/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTeams } from "@/features/teams";
+import { TeamAvatar, useTeams } from "@/features/teams";
 import { Link } from "@/i18n/navigation";
-import { clubColor } from "@/lib/football";
 import { cn } from "@/lib/utils";
 
 import { useMatches, useRounds } from "../hooks/use-competitions";
@@ -39,7 +37,7 @@ function TeamCell({
         align === "right" && "flex-row-reverse"
       )}
     >
-      <ClubAvatar name={name} color={clubColor(id)} size="sm" />
+      <TeamAvatar teamId={id} name={name} size="sm" />
       <span className="truncate text-[13px] font-semibold">{name}</span>
     </Link>
   );

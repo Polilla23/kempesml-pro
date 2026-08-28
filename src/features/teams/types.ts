@@ -124,6 +124,8 @@ export type StandingsTable = {
 export type SquadPlayer = {
   player_id: string;
   name: string;
+  /** Portrait URL (may 404 for players without an uploaded photo). */
+  photo_url: string | null;
   nationality_flag: string;
   position: string;
   position_group: PositionGroup;

@@ -4,7 +4,6 @@ import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { SectionCard } from "@/components/common/section-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +12,7 @@ import { formatFixtureDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import type { TeamFixture } from "../../types";
+import { TeamAvatar } from "../team-avatar";
 
 export function FixturesCarousel({
   fixtures,
@@ -71,7 +71,7 @@ export function FixturesCarousel({
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <ClubAvatar name={fx.rival.name} color={fx.rival.color} />
+              <TeamAvatar teamId={fx.rival.id} name={fx.rival.name} />
               <div className="min-w-0">
                 <div className="truncate text-sm font-extrabold">{fx.rival.name}</div>
                 <div className="text-[11px] text-muted-foreground">

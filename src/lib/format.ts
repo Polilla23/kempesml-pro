@@ -12,7 +12,10 @@
 export function formatMoney(amount: number, opts?: { signed?: boolean }) {
   const abs = Math.abs(amount);
   let body: string;
-  if (abs >= 1_000_000) {
+  if (abs >= 1_000_000_000) {
+    const b = abs / 1_000_000_000;
+    body = `€${Number.isInteger(b) ? b : b.toFixed(1)}B`;
+  } else if (abs >= 1_000_000) {
     const m = abs / 1_000_000;
     body = `€${Number.isInteger(m) ? m : m.toFixed(1)}M`;
   } else if (abs >= 1_000) {
@@ -88,9 +91,12 @@ export function formatRelativeTime(iso: string, locale: string, now = new Date()
   return rtf.format(Math.round(ms / (7 * 86_400_000)), "week");
 }
 
-/** ISO-3166 alpha-2 code → flag emoji ("es" → 🇪🇸). Falls back to 🏳️. */
-export function flagEmoji(iso2: string | null | undefined) {
-  if (!iso2 || iso2.length !== 2) return "🏳️";
+/**
+ * ISO-3166 alpha-2 code → flag emoji ("es" → 🇪🇸). Falls back to 🏳️ — also
+ * for the numeric SoFIFA country ids some endpoints now send.
+ */
+export function flagEmoji(iso2: string | number | null | undefined) {
+  if (!iso2 || typeof iso2 !== "string" || iso2.length !== 2) return "🏳️";
   const [a, b] = iso2.toUpperCase();
   return (
     String.fromCodePoint(0x1f1e6 + a.charCodeAt(0) - 65) +

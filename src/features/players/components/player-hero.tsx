@@ -3,8 +3,8 @@
 import { ExternalLink } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { Badge } from "@/components/ui/badge";
+import { TeamAvatar } from "@/features/teams";
 import { Link } from "@/i18n/navigation";
 import { formatLongDate, formatMoney, yearsSince } from "@/lib/format";
 
@@ -53,10 +53,11 @@ export function PlayerHero({ player }: { player: PlayerProfile }) {
     rows.push({ label: t("foot"), value: t(`feet.${player.foot}`) });
   if (player.secondary_position)
     rows.push({ label: t("secondaryPosition"), value: player.secondary_position });
-  rows.push({
-    label: t("salary"),
-    value: t("salaryPerSeason", { amount: formatMoney(player.salary) }),
-  });
+  if (player.salary > 0)
+    rows.push({
+      label: t("salary"),
+      value: t("salaryPerSeason", { amount: formatMoney(player.salary) }),
+    });
   if (player.joined_season)
     rows.push({
       label: t("joined"),
@@ -87,7 +88,7 @@ export function PlayerHero({ player }: { player: PlayerProfile }) {
             href={`/teams/${player.team.id}`}
             className="flex items-center gap-2 text-sm hover:underline sm:ml-auto"
           >
-            <ClubAvatar name={player.team.name} color={player.team.color} size="sm" />
+            <TeamAvatar teamId={player.team.id} name={player.team.name} size="sm" />
             <span className="font-bold">{player.team.name}</span>
             {player.team.division_name && (
               <span className="hidden text-muted-foreground sm:inline">

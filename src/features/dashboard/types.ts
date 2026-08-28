@@ -58,6 +58,8 @@ export type TransferFeedItem = {
   id: string;
   player_id: string;
   player_name: string;
+  /** Player portrait URL (may 404 for players without an uploaded photo). */
+  photo_url: string | null;
   position: string;
   kind: "purchase" | "loan" | "free";
   fee: number | null;
@@ -65,8 +67,10 @@ export type TransferFeedItem = {
   date: string;
   from_team_id: string;
   from_team_name: string;
+  from_team_logo: string | null;
   to_team_id: string;
   to_team_name: string;
+  to_team_logo: string | null;
 };
 
 export type NewsItem = {

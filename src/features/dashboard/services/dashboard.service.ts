@@ -3,15 +3,12 @@ import type { TypedSupabaseClient } from "@/lib/supabase/types";
 import type { Tables, Views } from "@/types/database.types";
 
 import { teamProfileService, type TeamFixture } from "@/features/teams";
+import { competitionKindOf } from "@/lib/football";
 
 import {
-  MOCK_CHAMPIONS,
-  MOCK_LATEST_RESULTS,
   MOCK_MY_FIXTURES,
   MOCK_NEWS,
   MOCK_PLAZO,
-  MOCK_SEASON_SUMMARY,
-  MOCK_TRANSFERS_FEED,
 } from "../mocks/dashboard.mock";
 import type {
   LatestResult,
@@ -134,34 +131,125 @@ export const dashboardService = {
     return real.length > 0 ? real : MOCK_MY_FIXTURES.slice(0, limit);
   },
 
-  /**
-   * TODO(db): `get_season_summary(p_season_id default null)` — hero KPIs
-   * (docs/db-pending-home.md §1). MOCKED.
-   */
+  /** Hero KPIs via get_season_summary(null = active season). */
   async getSeasonSummary(
-    _supabase: TypedSupabaseClient
+    supabase: TypedSupabaseClient
   ): Promise<SeasonSummary> {
-    return MOCK_SEASON_SUMMARY;
+    const raw = await rpc<{
+      season_id: string;
+      matches_played: number | null;
+      total_matches: number | null;
+      transfers_count: number | null;
+      transfers_amount: number | null;
+    }>(supabase, "get_season_summary", { p_season_id: null });
+    return {
+      season_id: raw.season_id,
+      matches_played: raw.matches_played ?? 0,
+      matches_total: raw.total_matches ?? 0,
+      transfers_count: raw.transfers_count,
+      transfers_amount: raw.transfers_amount,
+    };
   },
 
   /**
-   * TODO(db): `get_season_champions(p_season_id default null)` — reigning
-   * champions per tournament (docs/db-pending-home.md §2). MOCKED.
+   * Reigning champions via get_season_champions(null = latest). The hero
+   * shows 4: senior league A, kempesitas league A, Copa de Oro, then the rest.
    */
   async getChampions(
-    _supabase: TypedSupabaseClient
+    supabase: TypedSupabaseClient
   ): Promise<SeasonChampion[]> {
-    return MOCK_CHAMPIONS;
+    const rows =
+      (await rpc<
+        | {
+            team_id: string;
+            team_name: string;
+            tournament_id: string;
+            tournament_name: string;
+            tournament_type: string | null;
+            division: string | null;
+            category: string | null;
+          }[]
+        | null
+      >(supabase, "get_season_champions", { p_season_id: null })) ?? [];
+
+    const weight = (r: (typeof rows)[number]) => {
+      const league = r.tournament_type === "LEAGUE" && r.division === "A";
+      if (league && r.category === "senior") return 0;
+      if (league) return 1;
+      if (r.tournament_name.toLowerCase().includes("oro")) return 2;
+      return 3;
+    };
+
+    return rows
+      .sort((a, b) => weight(a) - weight(b))
+      .slice(0, 4)
+      .map((r) => ({
+        tournament_id: r.tournament_id,
+        // "Liga Mayores T31" → "Liga Mayores" (the chip is tiny).
+        tournament_name: r.tournament_name.replace(/\s*T\d+$/, ""),
+        kind: competitionKindOf(r.tournament_type, r.tournament_name),
+        team_id: r.team_id,
+        team_name: r.team_name,
+      }));
   },
 
   /**
-   * TODO(db): `get_latest_results(p_limit default 12)` — league-wide latest
-   * loaded results (docs/db-pending-home.md §3). MOCKED.
+   * League-wide latest loaded results via get_latest_results(p_limit).
+   * TODO(db): the RPC's `competition` field carries the type ("CUP") instead
+   * of the tournament name — until it's fixed we resolve the name from
+   * tournament_id against the active season's tournaments.
    */
   async getLatestResults(
-    _supabase: TypedSupabaseClient
+    supabase: TypedSupabaseClient,
+    limit = 12
   ): Promise<LatestResult[]> {
-    return MOCK_LATEST_RESULTS;
+    const [rows, season] = await Promise.all([
+      rpc<
+        | {
+            id: string;
+            tournament_id: string;
+            competition: string | null;
+            competition_kind: string | null;
+            competition_division: string | null;
+            plazo: string | null;
+            home_team_id: string;
+            home_team_name: string | null;
+            home_score: number;
+            away_team_id: string;
+            away_team_name: string | null;
+            away_score: number;
+            loaded_at: string;
+          }[]
+        | null
+      >(supabase, "get_latest_results", { p_limit: limit }),
+      rpc<SeasonInfo>(supabase, "get_active_season"),
+    ]);
+    const tournaments = await rpc<TournamentRow[] | null>(
+      supabase,
+      "get_tournaments_by_season",
+      { p_season_id: season.id }
+    );
+    const nameById = new Map(tournaments?.map((t) => [t.id, t.name]));
+
+    return (rows ?? [])
+      .sort((a, b) => b.loaded_at.localeCompare(a.loaded_at))
+      .map((r) => {
+        const name = nameById.get(r.tournament_id) ?? r.tournament_id;
+        return {
+          id: r.id,
+          competition: name,
+          competition_kind: competitionKindOf(r.competition_kind, name),
+          division: r.competition_division,
+          plazo: r.plazo,
+          home_team_id: r.home_team_id,
+          home_team_name: r.home_team_name ?? r.home_team_id,
+          home_score: r.home_score,
+          away_team_id: r.away_team_id,
+          away_team_name: r.away_team_name ?? r.away_team_id,
+          away_score: r.away_score,
+          loaded_at: r.loaded_at,
+        };
+      });
   },
 
   /**
@@ -177,13 +265,62 @@ export const dashboardService = {
   },
 
   /**
-   * TODO(db): `get_latest_transfers(p_limit default 12)` — market feed;
-   * depends on the transfers table (docs/db-pending-home.md §5). MOCKED.
+   * Market feed via get_latest_transfers(p_limit), newest first.
+   * Known DB-side issue (confirmed, fix pending there): the RPC currently
+   * sends some rows twice — no front workaround by request.
    */
   async getLatestTransfers(
-    _supabase: TypedSupabaseClient
+    supabase: TypedSupabaseClient,
+    limit = 12
   ): Promise<TransferFeedItem[]> {
-    return MOCK_TRANSFERS_FEED;
+    const rows =
+      (await rpc<
+        | {
+            id: string;
+            player_id: string;
+            player_name: string | null;
+            /** TODO(db): dropped when the crest fields were added — restore it. */
+            photo_url?: string | null;
+            position: string | null;
+            kind: string | null;
+            fee: number | null;
+            date: string;
+            from_team_id: string;
+            from_team_name: string | null;
+            from_team_logo: string | null;
+            to_team_id: string;
+            to_team_name: string | null;
+            to_team_logo: string | null;
+          }[]
+        | null
+      >(supabase, "get_latest_transfers", { p_limit: limit })) ?? [];
+
+    // DB kinds are uppercase (TRANSFER/LOAN/FREE...) → UI kinds.
+    const kindOf = (k: string | null): TransferFeedItem["kind"] => {
+      const up = (k ?? "").toUpperCase();
+      if (up.includes("LOAN")) return "loan";
+      if (up.includes("FREE")) return "free";
+      return "purchase";
+    };
+
+    return rows
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .map((r) => ({
+        id: r.id,
+        player_id: r.player_id,
+        player_name: r.player_name ?? r.player_id,
+        photo_url: r.photo_url ?? null,
+        position: r.position ?? "—",
+        kind: kindOf(r.kind),
+        fee: r.fee,
+        date: r.date,
+        from_team_id: r.from_team_id,
+        from_team_name: r.from_team_name ?? r.from_team_id,
+        from_team_logo: r.from_team_logo,
+        to_team_id: r.to_team_id,
+        to_team_name: r.to_team_name ?? r.to_team_id,
+        to_team_logo: r.to_team_logo,
+      }));
   },
 
   /**

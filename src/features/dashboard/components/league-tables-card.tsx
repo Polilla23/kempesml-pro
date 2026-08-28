@@ -4,13 +4,12 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { SectionCard } from "@/components/common/section-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentProfile } from "@/features/profiles";
+import { TeamAvatar } from "@/features/teams";
 import { Link } from "@/i18n/navigation";
-import { clubColor } from "@/lib/football";
 import { formatSigned } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -90,7 +89,7 @@ export function LeagueTablesCard() {
               >
                 <span className="font-extrabold text-muted-foreground">{r.position}</span>
                 <Link href={`/teams/${r.team_id}`} className="flex min-w-0 items-center gap-2 hover:underline">
-                  <ClubAvatar name={r.team_name} color={clubColor(r.team_id)} size="sm" />
+                  <TeamAvatar teamId={r.team_id} name={r.team_name} size="sm" />
                   <span className="flex min-w-0 flex-col">
                     <span className={cn("truncate", r.team_id === myTeamId ? "font-extrabold" : "font-bold")}>
                       {r.team_name}

@@ -4,10 +4,10 @@ import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { RatingBadge } from "@/components/common/rating-badge";
 import { SectionCard } from "@/components/common/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TeamAvatar } from "@/features/teams";
 import { Link } from "@/i18n/navigation";
 import { competitionIcon } from "@/lib/football";
 import { formatMoney } from "@/lib/format";
@@ -94,7 +94,7 @@ export function PlayerSeasonsTable({
                     {s.season}
                   </span>
                   <span className="flex min-w-0 items-center gap-2">
-                    <ClubAvatar name={s.team.name} color={s.team.color} size="xs" />
+                    <TeamAvatar teamId={s.team.id} name={s.team.name} size="xs" />
                     <Link
                       href={`/teams/${s.team.id}`}
                       onClick={(e) => e.stopPropagation()}

@@ -3,11 +3,11 @@
 import { useLocale, useTranslations } from "next-intl";
 
 import { AutoCarousel } from "@/components/common/auto-carousel";
-import { ClubAvatar } from "@/components/common/club-avatar";
 import { SectionCard } from "@/components/common/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TeamAvatar } from "@/features/teams";
 import { Link } from "@/i18n/navigation";
-import { clubColor, competitionTextClass } from "@/lib/football";
+import { competitionTextClass } from "@/lib/football";
 import { formatRelativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,7 @@ function Side({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <ClubAvatar name={name} color={clubColor(teamId)} size="xs" />
+      <TeamAvatar teamId={teamId} name={name} size="xs" />
       <Link
         href={`/teams/${teamId}`}
         className={cn(

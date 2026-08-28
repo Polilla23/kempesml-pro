@@ -1,8 +1,35 @@
 import type { CompetitionKind } from "@/lib/football";
-import type { Views } from "@/types/database.types";
 
-/** Row of the players list (`get_players` → SETOF v_players_full). */
-export type PlayerListItem = Views<"v_players_full">;
+/**
+ * Row of the players list.
+ *
+ * TODO(db): `get_players`, `get_player_by_id` and the `v_players_full` view
+ * were removed in the SoFIFA restructure (player_sofifa_data /
+ * player_positions now exist). This type mirrors the last known shape so the
+ * pages compile; the list and profile pages will error until the replacement
+ * functions land — update this type to whatever they return.
+ */
+export type PlayerListItem = {
+  id: string | null;
+  name: string | null;
+  birth_date: string | null;
+  nationality: string | null;
+  /** ISO-2 string historically; now a numeric SoFIFA country id. */
+  nationality_code: string | number | null;
+  category: string | null;
+  category_label: string | null;
+  status: string | null;
+  status_label: string | null;
+  primary_position: string | null;
+  positions: string[] | null;
+  salary: number | null;
+  current_team_id: string | null;
+  loaned_team_id: string | null;
+  sofifa_link: string | null;
+  rating: number | null;
+  market_value: number | null;
+  photo_url?: string | null;
+};
 
 /* -------------------------------------------------------------------------- */
 /*  Player profile                                                            */

@@ -1,165 +1,111 @@
-# Pedido DB — lo que falta para cerrar los perfiles
+# Pedido DB — Perfiles (solo lo que falta)
 
-Auditoría al 2026-08-26 de las páginas `/teams/[id]` y `/players/[id]` contra la
-API actual de Supabase. Las formas JSON detalladas de cada función pedida están
-en `db-contract-profiles.md` (se referencian como §N); acá está **qué falta,
-dónde se nota en la pantalla y con qué prioridad**.
-
-Convenciones: igual que todo lo existente — RPC que devuelve `jsonb` con claves
-`snake_case`, dinero en enteros, temporadas `"T31"`, `null` si el id no existe,
-listas vacías como `[]` (no `null`).
+Lista accionable al 2026-08-28. Todo lo que no está acá ya fue entregado y
+conectado. Formas JSON detalladas: `db-contract-profiles.md` (§N).
+Convenciones de siempre: `jsonb` snake_case, dinero en enteros, `[]` para
+listas vacías, `null` si el id no existe.
 
 ---
 
-## A. Perfil de club — pestaña por pestaña
+## 1 · Jugador — reponer lo que se fue en la reestructura (URGENTE: `/players` y el perfil están caídos)
 
-### A1. Resumen — conectado ✅, con estos huecos
+### 1a. `get_player_by_id(p_player_id text) → jsonb` ✅ (entregada y conectada 2026-08-28)
 
-| Bloque | Estado | Falta |
-|---|---|---|
-| Hero (nombre, DT, récord, forma, rating/valor/edad, posición) | ✅ real | color/escudo del club (**C4**) |
-| Trofeos | ✅ real (`get_team_trophies`) | — |
-| Próximos partidos | ✅ real (`get_team_fixtures`) | fecha o `plazo` (**C1**); opcional: contacto del rival (**C7**) |
-| Últimos resultados | ✅ real (`get_team_results`) | fecha o `plazo` (**C1**) y `is_home` (**C2**) |
-| Mejor XI | ✅ calculado en front desde `get_squad` | — |
-| Clasificación | ✅ real (`get_standings_by_tournament`) | columna `note`/zona: "Campeón", "Clasifica", "Descenso" (**C5**, opcional) |
-| Goleador / MVP | ✅ real (stats agregadas) | — |
-| Transferibles | ⚠️ vacío siempre | flag `transferable` (**C3**) |
+Quedan dos flecos: **falta `salary`** en el payload (el hero lo oculta
+mientras tanto), y confirmar el mapping de `foot` numérico (asumimos
+1 = derecho, 2 = izquierdo). Referencia de lo que pedía:
 
-### A2. Plantilla — conectada ✅
+Bio de `players` + bloque `sofifa` con la fila `is_current_roster = true` de
+`player_sofifa_data` tal cual (`to_jsonb(psd)` sirve):
 
-- Falta el flag **`transferable`** (**C3**): hoy todos figuran "Intransferible" y
-  el filtro "Transferibles" da vacío.
-- Performance (opcional, **C6**): las stats por jugador se arman en el front
-  sumando `get_player_stats_by_tournament` por cada torneo del equipo (6+
-  llamadas por visita). Una función agregada evitaría eso:
-
-```sql
-get_team_player_stats(p_team_id text, p_season_id text default null) → jsonb
--- [{ "player_id": "...", "matches_played": 15, "goals": 24, "assists": 5,
---    "mvps": 2, "yellow_cards": 3, "red_cards": 0 }]
+```json
+{
+  "id": "cody-gakpo-143505",
+  "name": "Cody Gakpo",
+  "birth_date": "1999-05-07",
+  "nationality": "Netherlands",
+  "nationality_code": "nl",          // ISO-2 de players, NO el country_id numérico
+  "photo_url": "https://firebasestorage...",
+  "salary": 6000000,
+  "status": "active", "status_label": "Active",
+  "category": "senior", "category_label": "Senior",
+  "primary_position": "LM",
+  "positions": ["LM", "LW"],
+  "current_team_id": "REINCIDENTES-FC",
+  "loaned_team_id": null,
+  "sofifa_link": "https://sofifa.com/player/242516",
+  "market_value": 65000000,
+  "rating": 83,
+  "sofifa": { "overall_rating": 83, "potential": 85, "height": 193, "foot": 1,
+              "skill_moves": 4, "weak_foot": 3, "pace": 80, "...": "todas las columnas de player_sofifa_data" }
+}
 ```
 
-### A3. Historial — 100% MOCK ❌
+`sofifa: null` si no hay datos scrapeados. `foot` es numérico: pasar el
+mapping (¿1 = derecho?) o devolverlo como texto.
 
-No hay ninguna función. Los datos base existen (standings + tournaments +
-trophies de temporadas viejas), falta exponerlos agregados:
+### 1b. `get_players(p_team_id, p_status, p_category, p_search)`
 
-- **`get_team_history(p_team_id)`** → spec **§8** de `db-contract-profiles.md`:
-  una fila por (temporada, torneo) con posición/fase, PJ-G-E-P, GF:GC y logro.
-  Con ids reales: `season: "T31"`, `competition: "Liga Mayores T31"`,
-  `competition_kind: "LEAGUE"|"CUP"`, `division`.
-- **`get_team_records(p_team_id)`** → spec **§9**: máximo goleador histórico y
-  mejor temporada salen de lo que ya hay; "fichaje/venta más cara" depende de
-  que exista la tabla de transferencias (**D1**) — si aún no está, devolver
-  solo los récords calculables.
+Como era antes, ideal `SETOF` de una vista recreada (necesitamos que PostgREST
+deje ordenar/paginar/contar sobre el resultado). Columnas: las de 1a **sin**
+el bloque `sofifa`.
 
-### A4. Finanzas — 100% MOCK ❌
+### 1c. `get_player_transfers(p_player_id text) → jsonb`
 
-No existen ni las tablas ni la función:
+Misma forma que `get_latest_transfers` pero filtrada por jugador, más
+reciente primero (+ `season_id` si está).
 
-- Tablas (**D2**): movimientos (`team_id, season_id, kind in/out, concept,
-  detail, amount, date`) y presupuesto por equipo/temporada.
-- **`get_team_finances(p_team_id, p_season_id default null)`** → spec **§10**.
-  ⚠️ Seguridad: validar adentro `manages_team(p_team_id) or is_admin()`.
+### 1d. Fix en `get_squad`
+
+`nationality_code` está devolviendo el `country_id` numérico de SoFIFA (ej.
+`34`) → que salga el ISO-2 de `players.nationality_code` (sin eso no hay
+banderas). Aplica igual a 1a/1b.
 
 ---
 
-## B. Perfil de jugador — todo MOCK salvo la bio disponible
+## 2 · Club — las 3 pestañas que siguen sin backend
 
-### B1. Cabecera — `v_players_full` cubre parte
+### 2a. `get_team_history(p_team_id text) → jsonb`  (spec §8)
 
-Ya hay: nombre, nacimiento, nacionalidad, posiciones, salario, club actual,
-rating, valor de mercado, link sofifa/transfermarkt.
+Una fila por (temporada, torneo), temporada más reciente primero: posición o
+fase, PJ-G-E-P, GF:GC y logro. Los datos ya existen en
+standings/tournaments/trophies de temporadas viejas.
 
-**Faltan campos** (spec **§11**; los scrapeables están en sofifa):
-`height_cm`, `foot` (pie hábil), `weak_foot` (1–5), `skill_moves` (1–5),
-`attacking_rate`/`defensive_rate` (low/medium/high), `potential`,
-"en el club desde" (temporada de llegada al club actual), y para el bloque de
-valor: `value_rank` (puesto por valor en la liga) y `position_avg_value`
-(promedio de valor de su posición en la liga).
+### 2b. `get_team_records(p_team_id text) → jsonb`  (spec §9)
 
-### B2. Atributos — la tabla YA EXISTE, falta exponerla
+Récords históricos. Con lo que ya hay se puede: máximo goleador histórico,
+mejor temporada, y ahora también fichaje/venta más cara (tabla `transfers`).
 
-`players_scrapped_stats` tiene los 30 atributos + los 5 de arquero, por
-`version` (FC 24/25/26) y fecha (hoy 1.248 filas; no todos los jugadores están
-cubiertos — ej. `alejandro-frances-632896` no tiene filas). Pedido:
+### 2c. Finanzas  (spec §10)
 
-```sql
-get_player_attributes(p_player_id text) → jsonb
--- la fila MÁS RECIENTE (última version_date) del jugador, tal cual la tabla;
--- null si no hay datos scrapeados.
-```
-
-Los promedios por grupo (Ritmo/Tiro/Pase/Regate/Defensa/Físico) los calcula el
-front. Si pueden, sumar `weak_foot`/`skill_moves`/`height`/`foot`/`potential`
-al scrapeo (sofifa los tiene) y devolverlos acá o en B1.
-
-### B3. Historial por temporada — falta el dato de fondo
-
-Spec **§12**. Las stats por torneo existen (`v_tournament_player_stats`), pero
-**no hay registro de en qué club estuvo el jugador en temporadas pasadas**
-(solo `current_team_id`). Hace falta o una tabla de historial de plantel por
-temporada (**D3**) o derivarlo si tienen cómo. Sin eso, esta sección no se
-puede armar.
-
-### B4. Transferencias — falta modelar
-
-Spec **§13**. **No existe tabla `transfers`** (**D1**): `player_id`,
-`from_team_id`, `to_team_id`, `kind` (compra/cesión/libre), `fee`, `date`,
-`season_id` + `get_player_transfers(p_player_id)`. También alimenta los récords
-de A3 y (a futuro) los movimientos de A4.
-
-### B5. Evolución de valor — falta el histórico
-
-Spec **§14**. Hoy solo hay el valor actual (`players_scrapped_data`). Opciones:
-guardar snapshot por temporada (`player_values`: `player_id, season_id, value,
-team_id, rating`) (**D4**), o si conservan los scrapeos viejos, exponerlos:
-`get_player_value_history(p_player_id)`.
-
-### B6. Ranking de valor — calculable ya
-
-Spec **§15**: `get_value_ranking(p_tournament_id, p_player_id, p_limit default 5)`
-sobre `players` ordenado por `market_value` (jugadores de los equipos de ese
-torneo), marcando `is_self` y agregando la fila del jugador si queda fuera del
-top.
+Falta modelar: tabla de movimientos (`team_id, season_id, kind in/out,
+concept, detail, amount, date`) + presupuesto por equipo/temporada, y
+`get_team_finances(p_team_id, p_season_id default null)`.
+⚠️ Validar adentro `manages_team(p_team_id) or is_admin()`.
 
 ---
 
-## C. Retoques rápidos (funciones existentes)
+## 3 · Retoques a funciones existentes
 
-1. **`get_team_fixtures`**: agregar `plazo` (y `scheduled_at` si algún día se
-   carga) para poder mostrar "Plazo N" en vez de "A confirmar".
-2. **`get_team_results`**: agregar `is_home` (para el "vs/@") y `plazo`/fecha.
-3. **`get_squad`**: agregar `transferable boolean` (o el estado que lo modele).
-4. **`teams`**: columna `color` (hex) — y opcional `crest_url` — expuesta en
-   `get_all_teams`, `get_team_profile` y en el rival de
-   `get_team_fixtures`/`get_team_results`. Hoy el front inventa un color
-   estable a partir del id.
-5. **standings**: campo `note`/zona por fila ("Campeón", "Clasifica",
-   "Descenso") — opcional.
-6. **`get_team_player_stats`** agregada por temporada (A2) — opcional,
-   performance.
-7. **`get_team_fixtures`**: `rival_manager_whatsapp`/`mail` para el botón
-   "Contactar rival" — opcional.
+1. `get_team_fixtures` y `get_team_results`: agregar `plazo` (y fecha si
+   algún día se carga). Hoy las cards dicen "A confirmar".
+2. `get_team_results`: agregar `is_home` (para el "vs/@").
+3. `get_squad`: agregar flag `transferable` (hoy todos figuran
+   "Intransferible" y el filtro Transferibles da vacío).
+4. `get_latest_results`: `competition` devuelve el TIPO ("CUP") en vez del
+   nombre del torneo; y confirmar orden `loaded_at desc`.
+5. `get_latest_transfers`: reponer `photo_url` (se cayó del payload al
+   agregar los escudos).
 
-## D. Tablas nuevas a modelar
+---
 
-| # | Tabla | Alimenta |
-|---|---|---|
-| D1 | `transfers` | B4, récords de A3, movimientos de A4 |
-| D2 | finanzas (movimientos + presupuestos) | A4 |
-| D3 | historial de plantel por temporada (jugador ↔ equipo ↔ season) | B3, y B1 ("en el club desde") |
-| D4 | `player_values` (valor por temporada) | B5 |
+## 4 · A modelar (para completar el perfil de jugador a futuro)
 
-## Prioridad sugerida
+1. **Historial de plantel por temporada** (jugador ↔ equipo ↔ season): sin
+   esto no hay "Historial por temporada" completo ni "en el club desde".
+2. **`player_values`** (valor por temporada): alimenta el gráfico de
+   evolución del valor.
 
-1. **C1–C4** (retoques: plazo, is_home, transferable, color) — cierran el
-   Resumen y la Plantilla del club.
-2. **A3** (`get_team_history` + `get_team_records` con lo calculable) — cierra
-   la pestaña Historial.
-3. **B1 + B2 + B6** (campos de cabecera, exponer atributos, ranking) — dejan el
-   perfil de jugador mayormente real.
-4. **D1/D3/D4 + B3/B4/B5** (modelar transferencias, historial de plantel,
-   valores) — completan jugador.
-5. **D2 + A4** (finanzas) — lo más grande, va último.
+## Orden sugerido
+
+1 (jugador caído) → 3 (retoques) → 2a/2b (historial club) → 4 → 2c (finanzas).

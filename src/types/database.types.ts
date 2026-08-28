@@ -337,6 +337,326 @@ export type Database = {
         };
         Relationships: [];
       };
+      player_positions: {
+        Row: {
+          player_id: string;
+          roster_id: string;
+          position_code: number;
+          position_abbr: string | null;
+          position_name: string | null;
+          is_primary: boolean;
+          sort_order: number;
+        };
+        Insert: {
+          player_id: string;
+          roster_id: string;
+          position_code: number;
+          position_abbr?: string | null;
+          position_name?: string | null;
+          is_primary: boolean;
+          sort_order: number;
+        };
+        Update: {
+          player_id?: string;
+          roster_id?: string;
+          position_code?: number;
+          position_abbr?: string | null;
+          position_name?: string | null;
+          is_primary?: boolean;
+          sort_order?: number;
+        };
+        Relationships: [
+        {
+          foreignKeyName: "player_positions_position_code_fkey";
+          columns: ["position_code"];
+          isOneToOne: false;
+          referencedRelation: "sofifa_positions";
+          referencedColumns: ["code"];
+        },
+      ];
+      };
+      player_sofifa_data: {
+        Row: {
+          player_id: string;
+          roster_id: string;
+          sofifa_id: string | null;
+          version: string | null;
+          is_current_roster: boolean;
+          first_name: string | null;
+          last_name: string | null;
+          common_name: string | null;
+          age: number | null;
+          birth_day: number | null;
+          birth_month: number | null;
+          birth_year: number | null;
+          height: number | null;
+          weight: number | null;
+          country: string | null;
+          country_id: number | null;
+          gender: string | null;
+          foot: number | null;
+          skill_moves: number | null;
+          weak_foot: number | null;
+          international_rep: number | null;
+          body_type_code: number | null;
+          position1: number | null;
+          position2: number | null;
+          position3: number | null;
+          position4: number | null;
+          position5: number | null;
+          position6: number | null;
+          position7: number | null;
+          overall_rating: number | null;
+          potential: number | null;
+          pace: number | null;
+          shooting: number | null;
+          passing: number | null;
+          dribbling_overall: number | null;
+          defending: number | null;
+          physical: number | null;
+          finishing: number | null;
+          shot_power: number | null;
+          long_shots: number | null;
+          volleys: number | null;
+          penalties: number | null;
+          heading: number | null;
+          positioning: number | null;
+          short_passing: number | null;
+          long_passing: number | null;
+          crossing: number | null;
+          curve: number | null;
+          fk_accuracy: number | null;
+          vision: number | null;
+          dribbling: number | null;
+          ball_control: number | null;
+          agility: number | null;
+          balance: number | null;
+          reactions: number | null;
+          composure: number | null;
+          marking: number | null;
+          interceptions: number | null;
+          standing_tackle: number | null;
+          sliding_tackle: number | null;
+          def_awareness: number | null;
+          sprint_speed: number | null;
+          acceleration: number | null;
+          stamina: number | null;
+          strength: number | null;
+          jumping: number | null;
+          aggression: number | null;
+          acceleration_type: string | null;
+          gk_diving: number | null;
+          gk_handling: number | null;
+          gk_kicking: number | null;
+          gk_positioning: number | null;
+          gk_reflexes: number | null;
+          price: number | null;
+          buyout: number | null;
+          wage: number | null;
+          growth: number | null;
+          atk_work_rate: string | null;
+          def_work_rate: string | null;
+          roles: Json | null;
+          play_styles: Json | null;
+          play_styles_plus: Json | null;
+          traits: Json | null;
+          specialities: Json | null;
+          teams: Json | null;
+          roster_anterior: string | null;
+          synced_at: string | null;
+          version_changed_at: string | null;
+          sync_count: number;
+          created_at: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          player_id: string;
+          roster_id: string;
+          sofifa_id?: string | null;
+          version?: string | null;
+          is_current_roster: boolean;
+          first_name?: string | null;
+          last_name?: string | null;
+          common_name?: string | null;
+          age?: number | null;
+          birth_day?: number | null;
+          birth_month?: number | null;
+          birth_year?: number | null;
+          height?: number | null;
+          weight?: number | null;
+          country?: string | null;
+          country_id?: number | null;
+          gender?: string | null;
+          foot?: number | null;
+          skill_moves?: number | null;
+          weak_foot?: number | null;
+          international_rep?: number | null;
+          body_type_code?: number | null;
+          position1?: number | null;
+          position2?: number | null;
+          position3?: number | null;
+          position4?: number | null;
+          position5?: number | null;
+          position6?: number | null;
+          position7?: number | null;
+          overall_rating?: number | null;
+          potential?: number | null;
+          pace?: number | null;
+          shooting?: number | null;
+          passing?: number | null;
+          dribbling_overall?: number | null;
+          defending?: number | null;
+          physical?: number | null;
+          finishing?: number | null;
+          shot_power?: number | null;
+          long_shots?: number | null;
+          volleys?: number | null;
+          penalties?: number | null;
+          heading?: number | null;
+          positioning?: number | null;
+          short_passing?: number | null;
+          long_passing?: number | null;
+          crossing?: number | null;
+          curve?: number | null;
+          fk_accuracy?: number | null;
+          vision?: number | null;
+          dribbling?: number | null;
+          ball_control?: number | null;
+          agility?: number | null;
+          balance?: number | null;
+          reactions?: number | null;
+          composure?: number | null;
+          marking?: number | null;
+          interceptions?: number | null;
+          standing_tackle?: number | null;
+          sliding_tackle?: number | null;
+          def_awareness?: number | null;
+          sprint_speed?: number | null;
+          acceleration?: number | null;
+          stamina?: number | null;
+          strength?: number | null;
+          jumping?: number | null;
+          aggression?: number | null;
+          acceleration_type?: string | null;
+          gk_diving?: number | null;
+          gk_handling?: number | null;
+          gk_kicking?: number | null;
+          gk_positioning?: number | null;
+          gk_reflexes?: number | null;
+          price?: number | null;
+          buyout?: number | null;
+          wage?: number | null;
+          growth?: number | null;
+          atk_work_rate?: string | null;
+          def_work_rate?: string | null;
+          roles?: Json | null;
+          play_styles?: Json | null;
+          play_styles_plus?: Json | null;
+          traits?: Json | null;
+          specialities?: Json | null;
+          teams?: Json | null;
+          roster_anterior?: string | null;
+          synced_at?: string | null;
+          version_changed_at?: string | null;
+          sync_count: number;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          player_id?: string;
+          roster_id?: string;
+          sofifa_id?: string | null;
+          version?: string | null;
+          is_current_roster?: boolean;
+          first_name?: string | null;
+          last_name?: string | null;
+          common_name?: string | null;
+          age?: number | null;
+          birth_day?: number | null;
+          birth_month?: number | null;
+          birth_year?: number | null;
+          height?: number | null;
+          weight?: number | null;
+          country?: string | null;
+          country_id?: number | null;
+          gender?: string | null;
+          foot?: number | null;
+          skill_moves?: number | null;
+          weak_foot?: number | null;
+          international_rep?: number | null;
+          body_type_code?: number | null;
+          position1?: number | null;
+          position2?: number | null;
+          position3?: number | null;
+          position4?: number | null;
+          position5?: number | null;
+          position6?: number | null;
+          position7?: number | null;
+          overall_rating?: number | null;
+          potential?: number | null;
+          pace?: number | null;
+          shooting?: number | null;
+          passing?: number | null;
+          dribbling_overall?: number | null;
+          defending?: number | null;
+          physical?: number | null;
+          finishing?: number | null;
+          shot_power?: number | null;
+          long_shots?: number | null;
+          volleys?: number | null;
+          penalties?: number | null;
+          heading?: number | null;
+          positioning?: number | null;
+          short_passing?: number | null;
+          long_passing?: number | null;
+          crossing?: number | null;
+          curve?: number | null;
+          fk_accuracy?: number | null;
+          vision?: number | null;
+          dribbling?: number | null;
+          ball_control?: number | null;
+          agility?: number | null;
+          balance?: number | null;
+          reactions?: number | null;
+          composure?: number | null;
+          marking?: number | null;
+          interceptions?: number | null;
+          standing_tackle?: number | null;
+          sliding_tackle?: number | null;
+          def_awareness?: number | null;
+          sprint_speed?: number | null;
+          acceleration?: number | null;
+          stamina?: number | null;
+          strength?: number | null;
+          jumping?: number | null;
+          aggression?: number | null;
+          acceleration_type?: string | null;
+          gk_diving?: number | null;
+          gk_handling?: number | null;
+          gk_kicking?: number | null;
+          gk_positioning?: number | null;
+          gk_reflexes?: number | null;
+          price?: number | null;
+          buyout?: number | null;
+          wage?: number | null;
+          growth?: number | null;
+          atk_work_rate?: string | null;
+          def_work_rate?: string | null;
+          roles?: Json | null;
+          play_styles?: Json | null;
+          play_styles_plus?: Json | null;
+          traits?: Json | null;
+          specialities?: Json | null;
+          teams?: Json | null;
+          roster_anterior?: string | null;
+          synced_at?: string | null;
+          version_changed_at?: string | null;
+          sync_count?: number;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       player_statuses: {
         Row: {
           code: string;
@@ -381,6 +701,7 @@ export type Database = {
           transfermarket_id: number | null;
           created_at: string;
           updated_at: string | null;
+          photo_url: string | null;
         };
         Insert: {
           id: string;
@@ -401,6 +722,7 @@ export type Database = {
           transfermarket_id?: number | null;
           created_at?: string;
           updated_at?: string | null;
+          photo_url?: string | null;
         };
         Update: {
           id?: string;
@@ -421,6 +743,7 @@ export type Database = {
           transfermarket_id?: number | null;
           created_at?: string;
           updated_at?: string | null;
+          photo_url?: string | null;
         };
         Relationships: [
         {
@@ -762,6 +1085,27 @@ export type Database = {
         },
       ];
       };
+      sofifa_positions: {
+        Row: {
+          code: number;
+          abbreviation: string;
+          name: string;
+          active: boolean;
+        };
+        Insert: {
+          code: number;
+          abbreviation: string;
+          name: string;
+          active: boolean;
+        };
+        Update: {
+          code?: number;
+          abbreviation?: string;
+          name?: string;
+          active?: boolean;
+        };
+        Relationships: [];
+      };
       standings: {
         Row: {
           id: string;
@@ -825,6 +1169,30 @@ export type Database = {
         },
       ];
       };
+      storage_photos_temp: {
+        Row: {
+          file_name: string;
+          name_without_suffix: string | null;
+          display_name: string | null;
+          public_url: string | null;
+          file_name_final: string | null;
+        };
+        Insert: {
+          file_name: string;
+          name_without_suffix?: string | null;
+          display_name?: string | null;
+          public_url?: string | null;
+          file_name_final?: string | null;
+        };
+        Update: {
+          file_name?: string;
+          name_without_suffix?: string | null;
+          display_name?: string | null;
+          public_url?: string | null;
+          file_name_final?: string | null;
+        };
+        Relationships: [];
+      };
       teams: {
         Row: {
           id: string;
@@ -836,6 +1204,7 @@ export type Database = {
           manager_whatsapp: string | null;
           created_at: string;
           updated_at: string | null;
+          crest_url: string | null;
         };
         Insert: {
           id: string;
@@ -847,6 +1216,7 @@ export type Database = {
           manager_whatsapp?: string | null;
           created_at?: string;
           updated_at?: string | null;
+          crest_url?: string | null;
         };
         Update: {
           id?: string;
@@ -858,6 +1228,7 @@ export type Database = {
           manager_whatsapp?: string | null;
           created_at?: string;
           updated_at?: string | null;
+          crest_url?: string | null;
         };
         Relationships: [];
       };
@@ -972,6 +1343,7 @@ export type Database = {
           total_teams: number | null;
           total_matches: number | null;
           total_rounds: number | null;
+          logo_url: string | null;
         };
         Insert: {
           id: string;
@@ -993,6 +1365,7 @@ export type Database = {
           total_teams?: number | null;
           total_matches?: number | null;
           total_rounds?: number | null;
+          logo_url?: string | null;
         };
         Update: {
           id?: string;
@@ -1014,6 +1387,7 @@ export type Database = {
           total_teams?: number | null;
           total_matches?: number | null;
           total_rounds?: number | null;
+          logo_url?: string | null;
         };
         Relationships: [
         {
@@ -1053,6 +1427,162 @@ export type Database = {
         },
       ];
       };
+      transfer_installments: {
+        Row: {
+          id: string;
+          transfer_id: string;
+          amount: number;
+          period_moment: string | null;
+          period_season: string | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          transfer_id: string;
+          amount: number;
+          period_moment?: string | null;
+          period_season?: string | null;
+          status: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          transfer_id?: string;
+          amount?: number;
+          period_moment?: string | null;
+          period_season?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      transfer_statuses: {
+        Row: {
+          code: string;
+          label: string;
+          sort_order: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          code: string;
+          label: string;
+          sort_order: number;
+          active: boolean;
+          created_at?: string;
+        };
+        Update: {
+          code?: string;
+          label?: string;
+          sort_order?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      transfer_types: {
+        Row: {
+          code: string;
+          label: string;
+          sort_order: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          code: string;
+          label: string;
+          sort_order: number;
+          active: boolean;
+          created_at?: string;
+        };
+        Update: {
+          code?: string;
+          label?: string;
+          sort_order?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      transfers: {
+        Row: {
+          id: string;
+          group_id: string | null;
+          player_id: string | null;
+          player_name: string | null;
+          season_id: string;
+          buyer_team_id: string | null;
+          seller_team_id: string | null;
+          loader_team_id: string | null;
+          must_confirm_team_id: string | null;
+          type: string;
+          status: string;
+          is_pre_contract: boolean;
+          is_primary: boolean;
+          total_amount: number;
+          payment_type: string | null;
+          payment_period_moment: string | null;
+          payment_period_season: string | null;
+          created_by: string | null;
+          cancelled_by: string | null;
+          created_at: string;
+          confirmed_at: string | null;
+          cancelled_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id: string;
+          group_id?: string | null;
+          player_id?: string | null;
+          player_name?: string | null;
+          season_id: string;
+          buyer_team_id?: string | null;
+          seller_team_id?: string | null;
+          loader_team_id?: string | null;
+          must_confirm_team_id?: string | null;
+          type: string;
+          status: string;
+          is_pre_contract: boolean;
+          is_primary: boolean;
+          total_amount: number;
+          payment_type?: string | null;
+          payment_period_moment?: string | null;
+          payment_period_season?: string | null;
+          created_by?: string | null;
+          cancelled_by?: string | null;
+          created_at?: string;
+          confirmed_at?: string | null;
+          cancelled_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          group_id?: string | null;
+          player_id?: string | null;
+          player_name?: string | null;
+          season_id?: string;
+          buyer_team_id?: string | null;
+          seller_team_id?: string | null;
+          loader_team_id?: string | null;
+          must_confirm_team_id?: string | null;
+          type?: string;
+          status?: string;
+          is_pre_contract?: boolean;
+          is_primary?: boolean;
+          total_amount?: number;
+          payment_type?: string | null;
+          payment_period_moment?: string | null;
+          payment_period_season?: string | null;
+          created_by?: string | null;
+          cancelled_by?: string | null;
+          created_at?: string;
+          confirmed_at?: string | null;
+          cancelled_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       trophies: {
         Row: {
           id: string;
@@ -1079,71 +1609,6 @@ export type Database = {
       };
     };
     Views: {
-      v_players_full: {
-        Row: {
-          id: string | null;
-          name: string | null;
-          normalized_name: string | null;
-          keywords: string[] | null;
-          birth_date: string | null;
-          nationality: string | null;
-          nationality_code: string | null;
-          category: string | null;
-          category_label: string | null;
-          status: string | null;
-          status_label: string | null;
-          primary_position: string | null;
-          positions: string[] | null;
-          salary: number | null;
-          current_team_id: string | null;
-          loaned_team_id: string | null;
-          sofifa_link: string | null;
-          transfermarket_id: number | null;
-          created_at: string | null;
-          updated_at: string | null;
-          rating: number | null;
-          market_value: number | null;
-          market_value_txt: string | null;
-          market_value_date: string | null;
-          current_club_id: string | null;
-          current_club_name: string | null;
-          club_logo_id: string | null;
-          league_id: string | null;
-          league_name: string | null;
-          last_updated: string | null;
-          last_position_review: string | null;
-        };
-        Relationships: [
-        {
-          foreignKeyName: "v_players_full_category_fkey";
-          columns: ["category"];
-          isOneToOne: false;
-          referencedRelation: "player_categories";
-          referencedColumns: ["code"];
-        },
-        {
-          foreignKeyName: "v_players_full_status_fkey";
-          columns: ["status"];
-          isOneToOne: false;
-          referencedRelation: "player_statuses";
-          referencedColumns: ["code"];
-        },
-        {
-          foreignKeyName: "v_players_full_current_team_id_fkey";
-          columns: ["current_team_id"];
-          isOneToOne: false;
-          referencedRelation: "teams";
-          referencedColumns: ["id"];
-        },
-        {
-          foreignKeyName: "v_players_full_loaned_team_id_fkey";
-          columns: ["loaned_team_id"];
-          isOneToOne: false;
-          referencedRelation: "teams";
-          referencedColumns: ["id"];
-        },
-      ];
-      };
       v_resultado: {
         Row: {
           jsonb_build_object: Json | null;
@@ -1288,18 +1753,20 @@ export type Database = {
       get_all_teams: { Args: Record<PropertyKey, never>; Returns: unknown };
       get_incident_types: { Args: Record<PropertyKey, never>; Returns: unknown };
       get_incidents_by_match: { Args: { p_match_id: string }; Returns: unknown };
+      get_latest_results: { Args: { p_limit: number }; Returns: unknown };
+      get_latest_transfers: { Args: { p_limit: number }; Returns: unknown };
       get_match_statuses: { Args: Record<PropertyKey, never>; Returns: unknown };
       get_match_types: { Args: Record<PropertyKey, never>; Returns: unknown };
       get_matches_by_round: { Args: { p_round_id: string }; Returns: unknown };
       get_matches_by_tournament: { Args: { p_status: string; p_tournament_id: string }; Returns: unknown };
-      get_player_by_id: { Args: { p_id: string }; Returns: unknown };
       get_player_categories: { Args: Record<PropertyKey, never>; Returns: unknown };
       get_player_stats_by_tournament: { Args: { p_team_id: string; p_tournament_id: string }; Returns: unknown };
       get_player_statuses: { Args: Record<PropertyKey, never>; Returns: unknown };
-      get_players: { Args: { p_category: string; p_search: string; p_status: string; p_team_id: string }; Returns: unknown };
       get_rounds_by_tournament: { Args: { p_tournament_id: string }; Returns: unknown };
       get_season_by_id: { Args: { p_id: string }; Returns: unknown };
+      get_season_champions: { Args: { p_season_id: string }; Returns: unknown };
       get_season_statuses: { Args: Record<PropertyKey, never>; Returns: unknown };
+      get_season_summary: { Args: { p_season_id: string }; Returns: unknown };
       get_seasons: { Args: { p_status: string }; Returns: unknown };
       get_squad: { Args: { p_team_id: string }; Returns: unknown };
       get_squad_stats: { Args: { p_team_id: string }; Returns: unknown };

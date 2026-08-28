@@ -45,13 +45,18 @@ export function clubColor(id: string) {
   return `oklch(0.55 0.16 ${h % 360})`;
 }
 
-/** DB position code ("ARQ", "DFC", "MCO", "DC"...) → filter group. */
+/**
+ * DB position code → filter group. Handles both the Spanish codes ("ARQ",
+ * "DFC", "MCO"...) and the SoFIFA ones ("GK", "CB", "CDM", "LM", "ST"...).
+ */
 export function positionGroupOf(code: string | null | undefined): PositionGroup {
   if (!code) return "MID";
-  if (code === "ARQ" || code === "POR") return "GK";
-  if (["DFC", "LD", "LI", "CAD"].includes(code)) return "DEF";
-  if (["MC", "MCD", "MCO", "MD", "MI"].includes(code)) return "MID";
-  return "FWD"; // DC, ED, EI, SD...
+  if (["ARQ", "POR", "GK"].includes(code)) return "GK";
+  if (["DFC", "LD", "LI", "CAD", "CB", "LB", "RB", "LWB", "RWB"].includes(code))
+    return "DEF";
+  if (["MC", "MCD", "MCO", "MD", "MI", "CM", "CDM", "CAM", "LM", "RM"].includes(code))
+    return "MID";
+  return "FWD"; // DC, ED, EI, SD, ST, CF, LW, RW...
 }
 
 /**
