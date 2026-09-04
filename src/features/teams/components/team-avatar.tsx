@@ -20,6 +20,7 @@ export function TeamAvatar({
   size,
   className,
   style,
+  hoverCard,
 }: {
   teamId: string;
   /** Display name override (used while the teams list loads). */
@@ -27,6 +28,8 @@ export function TeamAvatar({
   size?: React.ComponentProps<typeof ClubAvatar>["size"];
   className?: string;
   style?: React.CSSProperties;
+  /** See ClubAvatar: zoom + tooltip, on by default except `xl`. */
+  hoverCard?: boolean;
 }) {
   const { data } = useTeams();
   const team = data?.find((t) => t.id === teamId) as TeamRowWithLogo | undefined;
@@ -39,6 +42,7 @@ export function TeamAvatar({
       size={size}
       className={className}
       style={style}
+      hoverCard={hoverCard}
     />
   );
 }

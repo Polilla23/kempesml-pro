@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- unused params on the 2 methods still waiting for DB backing (transfers, value history) */
-import { clubColor, competitionKindOf } from "@/lib/football";
+import { clubColor, competitionKindOf, transferKindOf } from "@/lib/football";
 import { flagEmoji, initials } from "@/lib/format";
 import type { TypedSupabaseClient } from "@/lib/supabase/types";
 import type { Views } from "@/types/database.types";
@@ -15,11 +15,29 @@ import type {
   ValueRankRow,
 } from "../types";
 
-// TODO(db): get_players is still missing after the SoFIFA restructure — the
-// list page and the value ranking error until its replacement lands. Shape
-// kept in PlayerListItem (../types.ts).
 type PlayerRow = PlayerListItem;
 type StatRow = Views<"v_tournament_player_stats">;
+
+const PLAYERS_ARGS = {
+  p_team_id: null as unknown as string,
+  p_status: null as unknown as string,
+  p_category: null as unknown as string,
+  p_search: null as unknown as string,
+};
+
+/**
+ * How many players are worth strictly more than `value` (rank - 1).
+ * No `head: true`: PostgREST does not execute set-returning RPCs on HEAD and
+ * reports count 0 — a 1-row range gets the real exact count.
+ */
+async function countRicherPlayers(supabase: TypedSupabaseClient, value: number) {
+  const { count, error } = await supabase
+    .rpc("get_players", PLAYERS_ARGS, { count: "exact" })
+    .gt("market_value", value)
+    .range(0, 0);
+  if (error) throw error;
+  return count ?? 0;
+}
 
 /** Raw payload of the restored get_player_by_id (2026-08-28). */
 type RpcSofifa = {
@@ -174,17 +192,8 @@ export const playerProfileService = {
     const [teams, rank] = await Promise.all([
       rpc<RpcTeamRow[] | null>(supabase, "get_all_teams"),
       player.market_value != null
-        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_players gone from generated types (TODO(db): still missing)
-          (supabase.rpc as any)(
-            "get_players",
-            { p_team_id: null, p_status: null, p_category: null, p_search: null },
-            { count: "exact", head: true }
-          )
-            .gt("market_value", player.market_value)
-            .then(({ count }: { count: number | null }) =>
-              count != null ? count + 1 : null
-            )
-            // TODO(db): get_players is gone — no ranking until it's back.
+        ? countRicherPlayers(supabase, player.market_value)
+            .then((n) => n + 1)
             .catch(() => null)
         : Promise.resolve(null),
     ]);
@@ -301,12 +310,55 @@ export const playerProfileService = {
     ];
   },
 
-  /** TODO(db): no transfers table yet — the block hides itself. */
+  /**
+   * Transfer history via get_player_transfers(p_player_id), newest first.
+   * Known DB-side issue (same as get_latest_transfers had): some rows come
+   * duplicated — shown as-is by request, fix pending in the function.
+   */
   async getTransfers(
-    _supabase: TypedSupabaseClient,
-    _playerId: string
+    supabase: TypedSupabaseClient,
+    playerId: string
   ): Promise<PlayerTransfer[]> {
-    return [];
+    const rows =
+      (await rpc<
+        | {
+            id: string;
+            date: string;
+            kind: string | null;
+            fee: number | null;
+            from_team_id: string;
+            from_team_name: string | null;
+            to_team_id: string;
+            to_team_name: string | null;
+          }[]
+        | null
+      >(supabase, "get_player_transfers", { p_player_id: playerId })) ?? [];
+
+    // "TRF-Temp 31-TRF-…" → "T31".
+    const seasonOf = (id: string) => {
+      const m = id.match(/Temp\s*(\d+)/i);
+      return m ? `T${m[1]}` : "—";
+    };
+
+    return rows
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .map((r) => ({
+        id: r.id,
+        season: seasonOf(r.id),
+        date: r.date,
+        kind: transferKindOf(r.kind),
+        fee: r.fee,
+        from: {
+          id: r.from_team_id,
+          name: r.from_team_name ?? r.from_team_id,
+          color: clubColor(r.from_team_id),
+        },
+        to: {
+          id: r.to_team_id,
+          name: r.to_team_name ?? r.to_team_id,
+          color: clubColor(r.to_team_id),
+        },
+      }));
   },
 
   /** TODO(db): no per-season value history yet — the chart hides itself. */
@@ -322,49 +374,47 @@ export const playerProfileService = {
     supabase: TypedSupabaseClient,
     playerId: string
   ): Promise<ValueRankRow[]> {
-    const [{ data, error }, teams, player] = await Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_players gone from generated types (TODO(db): removed in restructure)
-      (supabase.rpc as any)("get_players", {
-        p_team_id: null,
-        p_status: null,
-        p_category: null,
-        p_search: null,
-      })
+    const [top, teams, player] = await Promise.all([
+      supabase
+        .rpc("get_players", PLAYERS_ARGS)
         .order("market_value", { ascending: false, nullsFirst: false })
-        .range(0, 4) as Promise<{ data: PlayerRow[] | null; error: unknown }>,
+        .range(0, 4)
+        .then(({ data, error }) => {
+          if (error) throw error;
+          return (data as PlayerRow[] | null) ?? [];
+        }),
       rpc<RpcTeamRow[] | null>(supabase, "get_all_teams"),
       getPlayerRaw(supabase, playerId),
     ]);
-    if (error) throw error;
-
     const teamName = (id: string | null) =>
       teams?.find((t) => t.id === id)?.team_name ?? "—";
-    const rows = ((data as PlayerRow[] | null) ?? []).map((p, i) => ({
-      position: i + 1,
+
+    const toRow = (
+      p: { id: string | null; name: string | null; current_team_id: string | null; market_value: number | null },
+      position: number
+    ): ValueRankRow => ({
+      position,
       player_id: p.id ?? "",
       name: p.name ? `${initials(p.name, 1)}. ${surname(p.name)}` : "—",
       team_name: teamName(p.current_team_id),
       value: p.market_value ?? 0,
       is_self: p.id === playerId,
-    }));
+    });
 
+    const rows = top.map((p, i) => toRow(p, i + 1));
     if (!rows.some((r) => r.is_self) && player?.market_value != null) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_players gone from generated types (TODO(db): removed in restructure)
-      const { count } = (await (supabase.rpc as any)(
-        "get_players",
-        { p_team_id: null, p_status: null, p_category: null, p_search: null },
-        { count: "exact", head: true }
-      ).gt("market_value", player.market_value)) as { count: number | null };
-      rows.push({
-        position: (count ?? 0) + 1,
-        player_id: playerId,
-        name: player.name
-          ? `${initials(player.name, 1)}. ${surname(player.name)}`
-          : playerId,
-        team_name: teamName(player.current_team_id),
-        value: player.market_value,
-        is_self: true,
-      });
+      const richer = await countRicherPlayers(supabase, player.market_value);
+      rows.push(
+        toRow(
+          {
+            id: player.id,
+            name: player.name,
+            current_team_id: player.current_team_id,
+            market_value: player.market_value,
+          },
+          richer + 1
+        )
+      );
     }
     return rows;
   },

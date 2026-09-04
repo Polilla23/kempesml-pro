@@ -3,7 +3,7 @@ import type { TypedSupabaseClient } from "@/lib/supabase/types";
 import type { Tables, Views } from "@/types/database.types";
 
 import { teamProfileService, type TeamFixture } from "@/features/teams";
-import { competitionKindOf } from "@/lib/football";
+import { competitionKindOf, transferKindOf } from "@/lib/football";
 
 import {
   MOCK_MY_FIXTURES,
@@ -295,14 +295,6 @@ export const dashboardService = {
         | null
       >(supabase, "get_latest_transfers", { p_limit: limit })) ?? [];
 
-    // DB kinds are uppercase (TRANSFER/LOAN/FREE...) → UI kinds.
-    const kindOf = (k: string | null): TransferFeedItem["kind"] => {
-      const up = (k ?? "").toUpperCase();
-      if (up.includes("LOAN")) return "loan";
-      if (up.includes("FREE")) return "free";
-      return "purchase";
-    };
-
     return rows
       .sort((a, b) => b.date.localeCompare(a.date))
       .map((r) => ({
@@ -311,7 +303,7 @@ export const dashboardService = {
         player_name: r.player_name ?? r.player_id,
         photo_url: r.photo_url ?? null,
         position: r.position ?? "—",
-        kind: kindOf(r.kind),
+        kind: transferKindOf(r.kind),
         fee: r.fee,
         date: r.date,
         from_team_id: r.from_team_id,

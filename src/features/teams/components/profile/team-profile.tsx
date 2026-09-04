@@ -5,9 +5,10 @@ import { Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { EmptyState } from "@/components/common/empty-state";
+import { PillTabsList } from "@/components/common/pill-tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Link } from "@/i18n/navigation";
 
 import {
@@ -72,18 +73,9 @@ export function TeamProfile({ teamId }: { teamId: string }) {
       {header.data ? <TeamHero team={header.data} /> : <Skeleton className="h-64 rounded-2xl" />}
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="gap-5">
-        {/* Pill tabs (Claude Design): active = primary, inactive = card + border. */}
-        <TabsList className="h-auto w-full flex-wrap gap-1.5 bg-transparent p-0 sm:w-fit">
-          {TABS.map((id) => (
-            <TabsTrigger
-              key={id}
-              value={id}
-              className="h-auto flex-none rounded-full border-border bg-card px-4.5 py-2 text-[13px] font-bold text-muted-foreground shadow-none transition-colors after:hidden hover:bg-muted hover:text-foreground data-active:border-primary data-active:bg-primary data-active:text-primary-foreground data-active:shadow-none dark:text-muted-foreground dark:data-active:border-primary dark:data-active:bg-primary dark:data-active:text-primary-foreground"
-            >
-              {t(`tabs.${id}`)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <PillTabsList
+          items={TABS.map((id) => ({ value: id, label: t(`tabs.${id}`) }))}
+        />
 
         <TabsContent value="summary" className="flex flex-col gap-5">
           <FixturesCarousel fixtures={fixtures.data} isLoading={fixtures.isLoading} />

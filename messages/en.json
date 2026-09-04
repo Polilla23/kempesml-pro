@@ -28,7 +28,7 @@
     "transfers": "Transfers",
     "statistics": "Statistics",
     "finances": "My Finances",
-    "trophies": "Trophies",
+    "trophies": "History",
     "news": "News",
     "adminUsers": "Users",
     "adminClubs": "Clubs",
@@ -483,6 +483,30 @@
     "news": {
       "title": "News · Latest from the KML",
       "viewAll": "View all"
+    }
+  },
+  "history": {
+    "title": "KML History",
+    "subtitle": "{seasons} seasons · {competitions} competitions · one all-time ranking",
+    "tabs": {
+      "palmares": "Titles ranking",
+      "champions": "Champions by season",
+      "records": "Records"
+    },
+    "palmares": {
+      "error": "The titles ranking could not be loaded",
+      "valuesTitle": "Value of each title",
+      "valuesNote": "The ranking orders by total points; ties break by number of titles. The Mundial is symbolic (0 pts).",
+      "pts": "{pts} pts",
+      "titles": "{count, plural, one {# title} other {# titles}}",
+      "filters": {
+        "all": "All teams",
+        "active": "Active only"
+      }
+    },
+    "soon": {
+      "champions": "Champions by season — coming soon.",
+      "records": "All-time records — coming soon."
     }
   }
 }

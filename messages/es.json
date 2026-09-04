@@ -28,7 +28,7 @@
     "transfers": "Transferencias",
     "statistics": "Estadísticas",
     "finances": "Mis Finanzas",
-    "trophies": "Palmarés",
+    "trophies": "Historia",
     "news": "Noticias",
     "adminUsers": "Usuarios",
     "adminClubs": "Clubes",
@@ -483,6 +483,30 @@
     "news": {
       "title": "Noticias · Lo último de la KML",
       "viewAll": "Ver todas"
+    }
+  },
+  "history": {
+    "title": "Historia de la KML",
+    "subtitle": "{seasons} temporadas · {competitions} competiciones · un solo palmarés",
+    "tabs": {
+      "palmares": "Palmarés",
+      "champions": "Campeones por temporada",
+      "records": "Récords"
+    },
+    "palmares": {
+      "error": "No se pudo cargar el palmarés",
+      "valuesTitle": "Valor de cada título",
+      "valuesNote": "El ranking ordena por puntaje total; a igual puntaje, desempata la mayor cantidad de títulos. El Mundial es simbólico (0 pts).",
+      "pts": "{pts} pts",
+      "titles": "{count, plural, one {# título} other {# títulos}}",
+      "filters": {
+        "all": "Todos los equipos",
+        "active": "Solo activos"
+      }
+    },
+    "soon": {
+      "champions": "Campeones por temporada — próximamente.",
+      "records": "Récords históricos — próximamente."
     }
   }
 }

@@ -7,8 +7,8 @@ import { useTranslations } from "next-intl";
 
 import { DataTable } from "@/components/common/data-table";
 import { EmptyState } from "@/components/common/empty-state";
+import { PlayerAvatar } from "@/components/common/player-avatar";
 import { Link } from "@/i18n/navigation";
-import { initials } from "@/lib/format";
 
 import { useTournamentPlayerStats } from "../hooks/use-competitions";
 import type { TournamentPlayerStats } from "../types";
@@ -30,12 +30,10 @@ export function StatsView() {
         cell: ({ row }) => (
           <Link
             href={`/players/${row.original.player_id}`}
-            className="flex min-w-0 items-center gap-2.5 hover:underline"
+            className="flex min-w-0 items-center gap-2.5"
           >
-            <span className="inline-flex size-6.5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-extrabold text-muted-foreground">
-              {initials(row.original.player_name ?? "?")}
-            </span>
-            <span className="max-w-44 truncate font-semibold">
+            <PlayerAvatar name={row.original.player_name ?? "?"} size="sm" />
+            <span className="max-w-44 truncate font-semibold hover:underline">
               {row.original.player_name}
             </span>
           </Link>

@@ -26,7 +26,8 @@ const SORTABLE = new Set([
 
 /**
  * Data-access for player listings. `get_players` returns SETOF v_players_full,
- * so PostgREST search/sort/pagination compose on top of the RPC.
+ * so PostgREST search/sort/pagination compose on top of the RPC (the
+ * server-side pattern from CLAUDE.md; `teams` is the reference).
  */
 export const playersService = {
   /** Server-side paginated list (search + filters + sort in the DB). */
@@ -35,20 +36,21 @@ export const playersService = {
     { page, pageSize, search, sortId, sortDesc, teamId, status, category }: PlayersListParams
   ): Promise<PaginatedResult<PlayerListItem>> {
     const { from, to } = pageRange(page, pageSize);
-    // TODO(db): get_players was removed in the SoFIFA restructure — this
-    // errors at runtime (the page shows its error state) until the
-    // replacement function lands; then restore the typed call.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- function no longer in generated types
-    let query = (supabase.rpc as any)(
-      "get_players",
-      {
-        p_team_id: teamId ?? null,
-        p_status: status ?? null,
-        p_category: category ?? null,
-        p_search: search?.trim() || null,
-      },
-      { count: "exact" }
-    ).range(from, to);
+    let query = supabase
+      .rpc(
+        "get_players",
+        {
+          p_team_id: (teamId ?? null) as unknown as string,
+          p_status: (status ?? null) as unknown as string,
+          p_category: (category ?? null) as unknown as string,
+          // The function's own search is unused — we filter with ilike below.
+          p_search: null as unknown as string,
+        },
+        { count: "exact" }
+      )
+      .range(from, to);
+    const term = search?.trim();
+    if (term) query = query.ilike("normalized_name", `%${term.toUpperCase()}%`);
     // nullsFirst:false — Postgres would otherwise put NULLs on top when DESC.
     query =
       sortId && SORTABLE.has(sortId)

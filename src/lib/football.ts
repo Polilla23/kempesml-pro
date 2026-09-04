@@ -111,6 +111,16 @@ export function trophyChipClass(kind: CompetitionKind) {
   };
 }
 
+/** DB transfer kinds are uppercase (TRANSFER/LOAN/FREE...) → UI kinds. */
+export function transferKindOf(
+  kind: string | null | undefined
+): "purchase" | "loan" | "free" {
+  const up = (kind ?? "").toUpperCase();
+  if (up.includes("LOAN")) return "loan";
+  if (up.includes("FREE")) return "free";
+  return "purchase";
+}
+
 export function resultBgClass(r: MatchResult) {
   if (r === "W") return "bg-emerald-500 text-white";
   if (r === "D") return "bg-amber-500 text-white";

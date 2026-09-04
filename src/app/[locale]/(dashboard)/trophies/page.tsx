@@ -1,9 +1,9 @@
 import { setRequestLocale } from "next-intl/server";
 
-import { ComingSoon } from "@/components/common/coming-soon";
+import { HistoryView } from "@/features/history";
 import type { Locale } from "@/i18n/routing";
 
-export default async function TrophiesPage({
+export default async function HistoryPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -11,5 +11,5 @@ export default async function TrophiesPage({
   const { locale } = await params;
   setRequestLocale(locale as Locale);
 
-  return <ComingSoon titleKey="trophies" />;
+  return <HistoryView />;
 }

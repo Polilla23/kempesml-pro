@@ -135,9 +135,9 @@ export function SquadTable({
               key={p.player_id}
               className={cn(GRID, "items-center border-t py-2.5 text-[13px] hover:bg-muted/40")}
             >
-              <Link href={`/players/${p.player_id}`} className="flex min-w-0 items-center gap-2.5 hover:underline">
+              <Link href={`/players/${p.player_id}`} className="flex min-w-0 items-center gap-2.5">
                 <PlayerAvatar name={p.name} src={p.photo_url} size="sm" />
-                <span className="truncate font-semibold">{p.name}</span>
+                <span className="truncate font-semibold hover:underline">{p.name}</span>
               </Link>
               <span className="text-center text-[15px]">{p.nationality_flag}</span>
               <span className="text-center text-[11px] font-bold text-muted-foreground">{p.position}</span>

@@ -1,7 +1,10 @@
 # Contrato DB — Perfil de club y perfil de jugador
 
-> **➡️ La lista viva de pendientes está en `db-pending-profiles.md`** (auditoría
-> pestaña por pestaña + prioridades). Este archivo queda como spec de formas.
+> **➡️ La lista viva de pendientes está en `db-pending-profiles.md`.** Este
+> archivo queda solo como spec de formas históricas: siguen siendo relevantes
+> **§8 (historial de club), §9 (récords), §10 (finanzas)** y, para el modelado
+> futuro, §12 (historial por temporada del jugador) y §14 (evolución de
+> valor). El resto ya fue entregado con formas propias de la API real.
 >
 > **Estado (2026-08-25):** el perfil de club ya está conectado a la API real
 > (`get_team_profile`, `get_team_trophies`, `get_team_fixtures`,

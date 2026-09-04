@@ -52,23 +52,19 @@ export function TransfersFeed() {
                   {tr.player_name}
                 </Link>
                 <div className="mt-2 flex items-center gap-2.5">
-                  <span title={tr.from_team_name}>
-                    <ClubAvatar
-                      name={tr.from_team_name}
-                      color={clubColor(tr.from_team_id)}
-                      src={tr.from_team_logo}
-                      size="lg"
-                    />
-                  </span>
+                  <ClubAvatar
+                    name={tr.from_team_name}
+                    color={clubColor(tr.from_team_id)}
+                    src={tr.from_team_logo}
+                    size="lg"
+                  />
                   <span className="text-base font-black text-primary">→</span>
-                  <span title={tr.to_team_name}>
-                    <ClubAvatar
-                      name={tr.to_team_name}
-                      color={clubColor(tr.to_team_id)}
-                      src={tr.to_team_logo}
-                      size="lg"
-                    />
-                  </span>
+                  <ClubAvatar
+                    name={tr.to_team_name}
+                    color={clubColor(tr.to_team_id)}
+                    src={tr.to_team_logo}
+                    size="lg"
+                  />
                 </div>
               </div>
               <div className="shrink-0 text-right">

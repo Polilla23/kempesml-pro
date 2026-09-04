@@ -11,6 +11,7 @@ import { useTranslations } from "next-intl";
 
 import { DataTable } from "@/components/common/data-table";
 import { EmptyState } from "@/components/common/empty-state";
+import { PlayerAvatar } from "@/components/common/player-avatar";
 import { RatingBadge } from "@/components/common/rating-badge";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -23,7 +24,7 @@ import {
 import { useTeams } from "@/features/teams";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Link } from "@/i18n/navigation";
-import { flagEmoji, formatMoney, initials, yearsSince } from "@/lib/format";
+import { flagEmoji, formatMoney, yearsSince } from "@/lib/format";
 
 import { usePlayerCatalogs, usePlayersList } from "../hooks/use-players-list";
 import type { PlayerListItem } from "../types";
@@ -60,6 +61,7 @@ function FilterSelect({
   );
 }
 
+/** Players list — server-side pagination/sort/search over get_players. */
 export function PlayersTable() {
   const t = useTranslations("playersPage");
 
@@ -96,8 +98,8 @@ export function PlayersTable() {
     return (id: string | null) => (id ? (map.get(id) ?? id) : "—");
   }, [teams.data]);
 
-  // Known status/category codes get translated; unknown ones show the DB label.
-  const statusLabel = (code: string | null, fallback: string | null) => {
+  // Known status codes get translated; unknown ones show the DB label.
+  const statusLabel = (code: string | null, fallback?: string | null) => {
     if (code && ["active", "inactive", "loaned", "free"].includes(code)) {
       return t(`statuses.${code}` as Parameters<typeof t>[0]);
     }
@@ -112,12 +114,14 @@ export function PlayersTable() {
         cell: ({ row }) => (
           <Link
             href={`/players/${row.original.id}`}
-            className="flex min-w-0 items-center gap-2.5 hover:underline"
+            className="flex min-w-0 items-center gap-2.5"
           >
-            <span className="inline-flex size-6.5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-extrabold text-muted-foreground">
-              {initials(row.original.name ?? "?")}
-            </span>
-            <span className="max-w-44 truncate font-semibold">
+            <PlayerAvatar
+              name={row.original.name ?? "?"}
+              src={row.original.photo_url}
+              size="sm"
+            />
+            <span className="max-w-44 truncate font-semibold hover:underline">
               {row.original.name}
             </span>
           </Link>
@@ -141,7 +145,7 @@ export function PlayersTable() {
         header: t("columns.pos"),
         cell: ({ row }) => (
           <span className="text-[11px] font-bold text-muted-foreground">
-            {row.original.primary_position ?? "—"}
+            {row.original.primary_position ?? row.original.positions?.[0] ?? "—"}
           </span>
         ),
       },

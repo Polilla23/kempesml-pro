@@ -58,6 +58,10 @@ export const queryKeys = {
     myFixtures: (teamId: string) =>
       ["dashboard", "my-fixtures", teamId] as const,
   },
+  history: {
+    all: ["history"] as const,
+    palmares: ["history", "palmares"] as const,
+  },
   competitions: {
     all: ["competitions"] as const,
     seasons: ["competitions", "seasons"] as const,

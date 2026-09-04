@@ -1609,6 +1609,97 @@ export type Database = {
       };
     };
     Views: {
+      v_players_full: {
+        Row: {
+          id: string | null;
+          name: string | null;
+          normalized_name: string | null;
+          keywords: string[] | null;
+          birth_date: string | null;
+          nationality: string | null;
+          nationality_code: string | null;
+          photo_url: string | null;
+          category: string | null;
+          category_label: string | null;
+          status: string | null;
+          status_label: string | null;
+          primary_position: string | null;
+          positions: string[] | null;
+          sofifa_primary_position: string | null;
+          salary: number | null;
+          current_team_id: string | null;
+          loaned_team_id: string | null;
+          sofifa_link: string | null;
+          transfermarket_id: number | null;
+          created_at: string | null;
+          updated_at: string | null;
+          roster_id: string | null;
+          sofifa_id: string | null;
+          sofifa_version: string | null;
+          overall_rating: number | null;
+          potential: number | null;
+          pace: number | null;
+          shooting: number | null;
+          passing: number | null;
+          dribbling_overall: number | null;
+          defending: number | null;
+          physical: number | null;
+          height: number | null;
+          weight: number | null;
+          foot: number | null;
+          skill_moves: number | null;
+          weak_foot: number | null;
+          acceleration_type: string | null;
+          sofifa_country: string | null;
+          price: number | null;
+          buyout: number | null;
+          wage: number | null;
+          roles: Json | null;
+          play_styles: Json | null;
+          play_styles_plus: Json | null;
+          synced_at: string | null;
+          market_value: number | null;
+          market_value_txt: string | null;
+          market_value_date: string | null;
+          rating: number | null;
+          current_club_id: string | null;
+          current_club_name: string | null;
+          club_logo_id: string | null;
+          league_id: string | null;
+          league_name: string | null;
+          scrapped_last_updated: string | null;
+        };
+        Relationships: [
+        {
+          foreignKeyName: "v_players_full_category_fkey";
+          columns: ["category"];
+          isOneToOne: false;
+          referencedRelation: "player_categories";
+          referencedColumns: ["code"];
+        },
+        {
+          foreignKeyName: "v_players_full_status_fkey";
+          columns: ["status"];
+          isOneToOne: false;
+          referencedRelation: "player_statuses";
+          referencedColumns: ["code"];
+        },
+        {
+          foreignKeyName: "v_players_full_current_team_id_fkey";
+          columns: ["current_team_id"];
+          isOneToOne: false;
+          referencedRelation: "teams";
+          referencedColumns: ["id"];
+        },
+        {
+          foreignKeyName: "v_players_full_loaned_team_id_fkey";
+          columns: ["loaned_team_id"];
+          isOneToOne: false;
+          referencedRelation: "teams";
+          referencedColumns: ["id"];
+        },
+      ];
+      };
       v_resultado: {
         Row: {
           jsonb_build_object: Json | null;
@@ -1759,9 +1850,11 @@ export type Database = {
       get_match_types: { Args: Record<PropertyKey, never>; Returns: unknown };
       get_matches_by_round: { Args: { p_round_id: string }; Returns: unknown };
       get_matches_by_tournament: { Args: { p_status: string; p_tournament_id: string }; Returns: unknown };
+      get_player_by_id: { Args: { p_player_id: string }; Returns: unknown };
       get_player_categories: { Args: Record<PropertyKey, never>; Returns: unknown };
       get_player_stats_by_tournament: { Args: { p_team_id: string; p_tournament_id: string }; Returns: unknown };
       get_player_statuses: { Args: Record<PropertyKey, never>; Returns: unknown };
+      get_players: { Args: { p_category: string; p_search: string; p_status: string; p_team_id: string }; Returns: unknown };
       get_rounds_by_tournament: { Args: { p_tournament_id: string }; Returns: unknown };
       get_season_by_id: { Args: { p_id: string }; Returns: unknown };
       get_season_champions: { Args: { p_season_id: string }; Returns: unknown };

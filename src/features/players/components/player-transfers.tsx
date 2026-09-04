@@ -20,7 +20,7 @@ export function PlayerTransfers({
 }) {
   const t = useTranslations("playerProfile.transfers");
   const locale = useLocale();
-  const total = transfers?.reduce((n, tr) => n + tr.fee, 0) ?? 0;
+  const total = transfers?.reduce((n, tr) => n + (tr.fee ?? 0), 0) ?? 0;
 
   return (
     <SectionCard
@@ -40,9 +40,10 @@ export function PlayerTransfers({
           {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10" />)}
         </div>
       )}
-      {transfers?.map((tr) => (
+      {transfers?.map((tr, i) => (
         <div
-          key={tr.id}
+          // Index-suffixed: the RPC currently sends some rows duplicated.
+          key={`${tr.id}-${i}`}
           className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t px-4 py-3.5 first:border-t-0 hover:bg-muted/40 md:px-5"
         >
           <div className="w-16 shrink-0">
@@ -62,7 +63,7 @@ export function PlayerTransfers({
           </div>
           <Badge variant="secondary">{t(`kinds.${tr.kind}`)}</Badge>
           <span className="w-19 text-right text-[15px] font-extrabold text-primary">
-            {formatMoney(tr.fee)}
+            {tr.fee != null ? formatMoney(tr.fee) : "—"}
           </span>
         </div>
       ))}

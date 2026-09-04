@@ -39,7 +39,9 @@ export function PlayerAvatar({
           src={src}
           alt=""
           loading="lazy"
-          className="absolute inset-0 size-full rounded-[inherit] object-cover"
+          // Solid ground: player photos are transparent PNGs and the initials
+          // underneath must not show through (they only appear on error).
+          className="absolute inset-0 size-full rounded-[inherit] bg-muted object-cover"
           onError={(e) => (e.currentTarget.style.display = "none")}
         />
       )}
